@@ -8,8 +8,13 @@
 <meta property="og:title" content="Halloween Party 🎃">
 <meta property="og:description" content="Ingressos para a Halloween Party · 03 de Outubro de 2026. Garanta o seu antes que esgote.">
 <meta property="og:type" content="website">
+<meta property="og:image" content="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1200' height='630' viewBox='0 0 1200 630'%3E%3Crect width='1200' height='630' fill='%23080505'/%3E%3Ccircle cx='600' cy='200' r='260' fill='none' stroke='%238a1420' stroke-width='1' opacity='0.4'/%3E%3Ctext x='600' y='260' font-family='serif' font-size='160' text-anchor='middle' fill='%23e0384a'%3E%F0%9F%8E%83%3C/text%3E%3Ctext x='600' y='370' font-family='Georgia,serif' font-size='62' font-weight='bold' text-anchor='middle' fill='%23f2e9e0' letter-spacing='4'%3EHalloween Party%3C/text%3E%3Ctext x='600' y='430' font-family='Georgia,serif' font-size='30' text-anchor='middle' fill='%23c9a24b' letter-spacing='6'%3E03 DE OUTUBRO DE 2026%3C/text%3E%3C/svg%3E">
+<meta property="og:url" content="">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%8E%83%3C/text%3E%3C/svg%3E">
 <meta name="theme-color" content="#080505">
+<meta name="robots" content="index, follow">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Creepster&family=Cinzel:wght@500;600;700;900&family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
   :root {
@@ -37,9 +42,11 @@
   body {
     background: var(--black);
     background-image:
-      radial-gradient(ellipse 90% 60% at 50% -15%, rgba(138,20,32,0.28), transparent 60%),
-      radial-gradient(ellipse 70% 45% at 100% 105%, rgba(201,162,75,0.08), transparent 60%),
-      radial-gradient(ellipse 50% 30% at 0% 40%, rgba(90,10,16,0.18), transparent 60%);
+      radial-gradient(ellipse 100% 70% at 50% -20%, rgba(138,20,32,0.42), transparent 55%),
+      radial-gradient(ellipse 80% 50% at 100% 100%, rgba(201,162,75,0.12), transparent 55%),
+      radial-gradient(ellipse 60% 40% at 0% 50%, rgba(90,10,16,0.28), transparent 55%),
+      radial-gradient(ellipse 40% 30% at 70% 30%, rgba(224,56,74,0.08), transparent 50%),
+      linear-gradient(180deg, #0a0404 0%, #080505 40%, #0c0606 100%);
     color: var(--text);
     font-family: 'Inter', sans-serif;
     min-height: 100vh;
@@ -47,15 +54,17 @@
     position: relative;
   }
 
-  /* textura sutil de ruido */
+  /* textura sutil de ruido + vinheta */
   body::after {
     content: '';
     position: fixed;
     inset: 0;
     z-index: 0;
     pointer-events: none;
-    opacity: 0.035;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    opacity: 0.045;
+    background-image:
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"),
+      radial-gradient(ellipse 80% 80% at 50% 50%, transparent 40%, rgba(0,0,0,0.55) 100%);
   }
 
   /* ── LIGHTNING FLASHES ── */
@@ -68,12 +77,33 @@
     animation: lightning 8s ease-in-out infinite;
   }
   @keyframes lightning {
-    0%, 88%, 92%, 96%, 100% { background: rgba(255,255,255,0); }
-    89%   { background: rgba(180,30,50,0.06); }
-    90%   { background: rgba(255,255,255,0); }
-    93%   { background: rgba(180,30,50,0.04); }
-    94%   { background: rgba(255,255,255,0); }
-    97%   { background: rgba(180,30,50,0.03); }
+    0%, 86%, 90%, 94%, 100% { background: rgba(255,255,255,0); }
+    87%   { background: rgba(200,30,50,0.09); }
+    88%   { background: rgba(255,255,255,0); }
+    91%   { background: rgba(180,30,50,0.06); }
+    92%   { background: rgba(255,255,255,0); }
+    95%   { background: rgba(160,20,40,0.04); }
+  }
+
+  /* ── NEBLINA (fundo, puro CSS) ── */
+  .fog {
+    position: fixed;
+    left: -10%;
+    right: -10%;
+    bottom: 0;
+    height: 160px;
+    z-index: 0;
+    pointer-events: none;
+    background:
+      radial-gradient(ellipse 55% 100% at 15% 100%, rgba(190,165,140,0.09), transparent 70%),
+      radial-gradient(ellipse 50% 100% at 55% 100%, rgba(150,120,100,0.07), transparent 70%),
+      radial-gradient(ellipse 60% 100% at 90% 100%, rgba(190,165,140,0.08), transparent 70%);
+    filter: blur(6px);
+    animation: fogDrift 24s ease-in-out infinite alternate;
+  }
+  @keyframes fogDrift {
+    0%   { transform: translateX(-3%); opacity: 0.65; }
+    100% { transform: translateX(3%); opacity: 1; }
   }
 
   /* ── PARTICLES ── */
@@ -128,12 +158,12 @@
   /* ── HERO ── */
   .hero {
     text-align: center;
-    padding: 44px 0 6px;
+    padding: 26px 0 4px;
     position: relative;
   }
   .drip-svg {
     display: block;
-    margin: 0 auto 22px;
+    margin: 0 auto 14px;
     overflow: visible;
     filter: drop-shadow(0 0 12px rgba(184,31,44,0.6));
   }
@@ -143,7 +173,7 @@
     letter-spacing: 5px;
     text-transform: uppercase;
     color: var(--gold);
-    margin: 22px 0 4px;
+    margin: 14px 0 4px;
     animation: eyebrowGlow 3s ease-in-out infinite;
   }
   @keyframes eyebrowGlow {
@@ -212,7 +242,7 @@
     align-items: center;
     gap: 12px;
     justify-content: center;
-    margin: 20px auto 0;
+    margin: 14px auto 0;
     max-width: 240px;
   }
   .hero-rule::before, .hero-rule::after {
@@ -243,11 +273,11 @@
   /* ── DATA DA FESTA ── */
   .party-date {
     text-align: center;
-    margin: 28px 0 30px;
+    margin: 18px 0 20px;
     background: linear-gradient(160deg, var(--card-2), #100907);
     border: 1px solid var(--card-border);
     border-radius: 4px;
-    padding: 20px 24px;
+    padding: 16px 22px;
     position: relative;
     animation: fadeInUp 0.7s cubic-bezier(0.22,1,0.36,1) both, dateGlow 3.6s ease-in-out infinite;
     animation-delay: 0.15s, 1.2s;
@@ -264,6 +294,7 @@
     border-radius: 2px;
     pointer-events: none;
   }
+  .party-date-info { /* wrapper interno sem padding extra */ }
   .party-date .label {
     font-family: 'Inter', sans-serif;
     font-size: 0.62rem;
@@ -279,25 +310,40 @@
     font-style: italic;
     color: var(--gold-bright);
     letter-spacing: 0.5px;
+    margin-bottom: 2px;
+  }
+  .party-date .time-val {
+    font-family: 'Inter', sans-serif;
+    font-size: 0.72rem;
+    color: var(--text-faint);
+    letter-spacing: 1px;
+    margin-top: 4px;
   }
 
+
   /* ── COUNTDOWN ── */
-  .countdown-party { text-align: center; margin-bottom: 34px; }
+  .countdown-party { text-align: center; margin-bottom: 26px; }
   .section-label {
     font-family: 'Inter', sans-serif;
     font-size: 0.65rem;
     letter-spacing: 3px;
     text-transform: uppercase;
     color: var(--text-faint);
-    margin-bottom: 14px;
+    margin-bottom: 10px;
   }
-  .cd-grid { display: flex; justify-content: center; gap: 10px; }
+  .cd-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; max-width: 320px; margin: 0 auto; }
   .cd-box {
     background: var(--card);
     border: 1px solid var(--card-border);
     border-radius: 8px;
-    padding: 13px 10px 10px;
-    min-width: 64px;
+    padding: 14px 4px;
+    min-width: 0;
+    min-height: 74px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
     text-align: center;
     position: relative;
     transition: border-color 0.3s, box-shadow 0.3s;
@@ -315,11 +361,10 @@
   }
   .cd-num {
     font-family: 'Cormorant Garamond', serif;
-    font-size: 2.1rem;
+    font-size: clamp(1.5rem, 7vw, 2.1rem);
     font-weight: 700;
     color: var(--red-glow);
     line-height: 1;
-    display: block;
     font-variant-numeric: tabular-nums;
   }
   .cd-num.tick { animation: cdBump 0.35s ease; }
@@ -329,12 +374,35 @@
     100% { transform: scale(1); }
   }
   .cd-unit {
-    font-size: 0.56rem;
-    letter-spacing: 2px;
+    font-size: clamp(0.52rem, 2.4vw, 0.6rem);
+    letter-spacing: 1.5px;
     text-transform: uppercase;
     color: var(--text-faint);
-    margin-top: 5px;
-    display: block;
+  }
+
+  /* ── COUNTDOWN É HOJE ── */
+  .cd-hoje {
+    display: none;
+    text-align: center;
+    padding: 10px 0 4px;
+  }
+  .cd-hoje.show { display: block; }
+  .cd-hoje-text {
+    font-family: 'Creepster', cursive;
+    font-size: clamp(1.8rem, 9vw, 2.6rem);
+    color: var(--red-glow);
+    letter-spacing: 2px;
+    text-shadow: 0 0 22px rgba(224,56,74,0.7), 0 0 60px rgba(138,20,32,0.5);
+    animation: hojeFlicker 1.2s ease-in-out infinite;
+  }
+  @keyframes hojeFlicker {
+    0%, 100% { opacity: 1; }
+    48% { opacity: 1; }
+    50% { opacity: 0.6; }
+    52% { opacity: 1; }
+    78% { opacity: 1; }
+    80% { opacity: 0.5; }
+    82% { opacity: 1; }
   }
 
   /* ── SOLD OUT BANNER ── */
@@ -359,6 +427,18 @@
     font-size: 1.1rem;
     font-style: italic;
     color: var(--text-dim);
+    line-height: 1.6;
+  }
+  .sold-out-banner p strong {
+    font-family: 'Inter', sans-serif;
+    font-style: normal;
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--gold-bright);
+  }
+  .sold-out-banner .so-note {
+    font-size: 0.85rem;
+    color: var(--text-faint);
   }
 
   /* ── BTN COMPRAR ── */
@@ -368,7 +448,7 @@
     justify-content: center;
     gap: 10px;
     width: 100%;
-    background: linear-gradient(135deg, #25D366 0%, #1ebe58 100%);
+    background: linear-gradient(135deg, var(--red-bright) 0%, var(--red) 100%);
     color: #fff;
     font-family: 'Inter', sans-serif;
     font-size: 1rem;
@@ -380,7 +460,7 @@
     border: none;
     cursor: pointer;
     text-decoration: none;
-    transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
+    transition: background 0.2s, transform 0.15s, box-shadow 0.2s, animation 0.2s;
     position: relative;
     overflow: hidden;
   }
@@ -391,7 +471,7 @@
     background: linear-gradient(135deg, rgba(255,255,255,0.12) 0%, transparent 60%);
     pointer-events: none;
   }
-  .btn-buy:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(37,211,102,0.35); }
+  .btn-buy:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(224,56,74,0.4); }
   .btn-buy:active:not(:disabled) { transform: scale(0.98); }
   .btn-buy svg { width: 20px; height: 20px; fill: #fff; flex-shrink: 0; }
   .btn-buy:disabled {
@@ -401,10 +481,11 @@
     transform: none;
     animation: none;
   }
-  .btn-buy:not(:disabled) { animation: buyPulse 2.4s ease-in-out infinite; }
+  .btn-buy:not(:disabled):not(.clicked) { animation: buyPulse 2.4s ease-in-out infinite; }
+  .btn-buy.clicked { animation: none; box-shadow: none; }
   @keyframes buyPulse {
-    0%, 100% { box-shadow: 0 0 0 rgba(37,211,102,0); }
-    50% { box-shadow: 0 0 24px rgba(37,211,102,0.5), 0 4px 16px rgba(37,211,102,0.2); }
+    0%, 100% { box-shadow: 0 0 0 rgba(224,56,74,0); }
+    50% { box-shadow: 0 0 24px rgba(224,56,74,0.55), 0 4px 16px rgba(138,20,32,0.3); }
   }
 
   /* ── FORM CARD ── */
@@ -457,7 +538,7 @@
     padding: 13px 14px;
     color: var(--text);
     font-family: 'Inter', sans-serif;
-    font-size: 0.95rem;
+    font-size: 1rem; /* ≥16px evita zoom automático no iOS */
     outline: none;
     transition: border-color 0.2s, box-shadow 0.2s;
   }
@@ -466,6 +547,24 @@
     box-shadow: 0 0 0 3px rgba(224,56,74,0.12);
   }
   .field input::placeholder { color: var(--text-faint); }
+  .field.valid input {
+    border-color: var(--gold);
+    box-shadow: 0 0 0 3px rgba(201,162,75,0.15);
+    color: var(--gold);
+  }
+  .field-check {
+    position: absolute;
+    right: 14px;
+    top: 50%;
+    transform: translateY(-50%) scale(0);
+    color: #25D366;
+    font-size: 1rem;
+    transition: transform 0.25s cubic-bezier(0.34,1.56,0.64,1), opacity 0.2s;
+    pointer-events: none;
+    opacity: 0;
+  }
+  .field.valid .field-check { transform: translateY(-50%) scale(1); opacity: 1; color: var(--gold); }
+  .field-input-wrap { position: relative; }
   .field-error {
     display: none;
     font-size: 0.72rem;
@@ -551,9 +650,9 @@
     transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
   }
   .terms-box input[type="checkbox"]:checked {
-    background: var(--red-glow);
-    border-color: var(--red-glow);
-    box-shadow: 0 0 8px rgba(224,56,74,0.4);
+    background: var(--gold);
+    border-color: var(--gold);
+    box-shadow: 0 0 8px rgba(201,162,75,0.4);
   }
   .terms-box input[type="checkbox"]:checked::after {
     content: '';
@@ -722,6 +821,22 @@
     background: linear-gradient(90deg, transparent, var(--red-glow), var(--gold), transparent);
   }
   @keyframes warnIn { from { transform: scale(0.9) translateY(20px); opacity: 0; } to { transform: scale(1) translateY(0); opacity: 1; } }
+  @keyframes screenFlash {
+    0% { background: rgba(0,0,0,0.85); }
+    8% { background: rgba(180,20,30,0.55); }
+    18% { background: rgba(0,0,0,0.85); }
+    26% { background: rgba(180,20,30,0.3); }
+    38% { background: rgba(0,0,0,0.85); }
+  }
+  .warning-overlay.open { display: flex; }
+  @keyframes warnShake {
+    0%, 100% { transform: scale(1) translateY(0); }
+    15% { transform: scale(1.03) translateY(-4px) rotate(-1deg); }
+    30% { transform: scale(0.98) translateY(2px) rotate(1deg); }
+    45% { transform: scale(1.02) translateY(-2px) rotate(-0.5deg); }
+    60% { transform: scale(1) translateY(1px); }
+  }
+  .warning-box { animation: warnIn 0.3s cubic-bezier(0.22,1,0.36,1), warnShake 0.5s 0.2s ease both; }
   .warning-icon { font-size: 2.4rem; display: block; margin-bottom: 12px; animation: iconBounce 1.8s ease-in-out infinite; }
   @keyframes iconBounce {
     0%, 100% { transform: translateY(0) rotate(0deg); }
@@ -779,7 +894,7 @@
   .warning-cancel:hover { border-color: var(--text-faint); color: var(--text); background: rgba(255,255,255,0.04); }
   .warning-continue {
     flex: 1;
-    background: var(--green);
+    background: var(--red-glow);
     color: #fff;
     border: none;
     border-radius: 10px;
@@ -790,7 +905,7 @@
     cursor: pointer;
     transition: background 0.2s, transform 0.15s;
   }
-  .warning-continue:hover:not(:disabled) { background: #1ebe58; transform: translateY(-1px); }
+  .warning-continue:hover:not(:disabled) { background: #f04558; transform: translateY(-1px); }
   .warning-continue:disabled {
     background: #222;
     color: var(--text-faint);
@@ -829,11 +944,124 @@
     opacity: 1;
     transform: translateY(0);
   }
+
+  /* ── LOCALIZAÇÃO ── */
+  .location-bar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    margin-bottom: 12px;
+    text-decoration: none;
+    color: var(--text-faint);
+    font-size: 0.74rem;
+    letter-spacing: 0.3px;
+    transition: color 0.25s;
+  }
+  .location-bar:hover { color: var(--gold); }
+  .location-bar svg { width: 13px; height: 13px; fill: currentColor; flex-shrink: 0; }
+  .location-bar span {
+    border-bottom: 1px dotted rgba(107,92,83,0.35);
+    transition: border-color 0.25s;
+  }
+  .location-bar:hover span { border-color: rgba(201,162,75,0.5); }
+
+  /* ── STATUS DOT (atualização do lote) ── */
+  .lote-status {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    justify-content: center;
+    font-size: 0.65rem;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--text-faint);
+    margin-bottom: 16px;
+    min-height: 14px;
+  }
+  .status-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--text-faint);
+    flex-shrink: 0;
+    transition: background 0.4s;
+  }
+  .status-dot.live { background: #25D366; box-shadow: 0 0 6px rgba(37,211,102,0.6); animation: dotPulse 2s ease-in-out infinite; }
+  .status-dot.checking { background: var(--gold); box-shadow: 0 0 6px rgba(201,162,75,0.5); animation: dotPulse 0.8s ease-in-out infinite; }
+  .status-dot.error { background: var(--danger); }
+  @keyframes dotPulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+
+  /* ── BOTÃO INSTAGRAM ── */
+  .instagram-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    background: linear-gradient(135deg, rgba(131,58,180,0.14), rgba(253,29,29,0.10), rgba(252,176,69,0.10));
+    border: 1px solid rgba(214,73,145,0.35);
+    color: var(--text-dim);
+    font-family: 'Inter', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 500;
+    padding: 12px;
+    border-radius: 10px;
+    cursor: pointer;
+    text-decoration: none;
+    transition: border-color 0.2s, color 0.2s, box-shadow 0.2s, transform 0.15s;
+    margin-bottom: 10px;
+  }
+  .instagram-btn:hover {
+    border-color: #d6408f;
+    color: var(--text);
+    box-shadow: 0 0 18px rgba(214,73,145,0.22);
+    transform: translateY(-1px);
+  }
+  .instagram-btn svg { width: 17px; height: 17px; flex-shrink: 0; }
+
+  /* ── BADGE DE URGÊNCIA DE LOTE ── */
+  .lote-urgency {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    background: linear-gradient(135deg, rgba(224,56,74,0.18), rgba(201,162,75,0.12));
+    border: 1px solid rgba(224,56,74,0.4);
+    border-radius: 20px;
+    padding: 4px 12px;
+    font-size: 0.65rem;
+    font-family: 'Inter', sans-serif;
+    font-weight: 600;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--red-glow);
+    margin-bottom: 14px;
+    animation: urgencyPulse 2s ease-in-out infinite;
+  }
+  @keyframes urgencyPulse {
+    0%, 100% { box-shadow: 0 0 0 rgba(224,56,74,0); }
+    50% { box-shadow: 0 0 14px rgba(224,56,74,0.25); }
+  }
+  .lote-urgency .fire { font-size: 0.8rem; }
+
+  /* ── TOAST VERDE (sucesso) ── */
+  .toast.success {
+    background: #1a8a45;
+    box-shadow: 0 4px 20px rgba(37,211,102,0.3);
+  }
+
+  /* capitalize automático no input de nome */
+  #nome { text-transform: capitalize; }
+  #nome::placeholder { text-transform: none; }
+
 </style>
 </head>
 <body>
 
 <div class="lightning"></div>
+<div class="fog"></div>
 <div class="particles" id="particles"></div>
 
 <div class="wrapper">
@@ -868,30 +1096,41 @@
         <path d="M207.5,0 C207.5,8.4 202.2,19.3 202.2,19.3 A3.2,3.2 0 1,0 208.8,19.3 C208.8,8.4 214.5,0 214.5,0 Z" fill="url(#dripGrad)"/>
       </g>
     </svg>
-    <div class="hero-eyebrow">Voce esta convidado</div>
-    <h1>Halloween Party<span class="accent">Save the Date</span></h1>
+    <div class="hero-eyebrow">Você está convidado</div>
+    <h1>Halloween Party<span class="accent">@hellhouse019</span></h1>
     <div class="hero-rule"><div class="diamond"></div></div>
   </div>
 
   <div class="party-date reveal">
-    <div class="label">Data da Festa</div>
-    <div class="date-val">03 de Outubro de 2026</div>
+    <div class="party-date-info">
+      <div class="label">Data da Festa</div>
+      <div class="date-val">03 de Outubro de 2026</div>
+      <div class="time-val">Sábado · a partir das 22h</div>
+    </div>
   </div>
 
   <div class="countdown-party reveal">
     <div class="section-label">Faltam para a festa</div>
-    <div class="cd-grid">
+    <div class="cd-hoje" id="cd-hoje">
+      <div class="cd-hoje-text">É hoje! 🎃</div>
+    </div>
+    <div class="cd-grid" id="cd-grid">
       <div class="cd-box"><span class="cd-num" id="p-days">--</span><span class="cd-unit">dias</span></div>
       <div class="cd-box"><span class="cd-num" id="p-hours">--</span><span class="cd-unit">horas</span></div>
       <div class="cd-box"><span class="cd-num" id="p-min">--</span><span class="cd-unit">min</span></div>
       <div class="cd-box"><span class="cd-num" id="p-sec">--</span><span class="cd-unit">seg</span></div>
-    </div>
+    </div><!-- /cd-grid -->
+  </div>
+
+  <div class="lote-status reveal" id="lote-status">
+    <div class="status-dot checking" id="status-dot"></div>
+    <span id="status-label">Verificando disponibilidade...</span>
   </div>
 
   <div id="content" class="reveal">
     <div class="status-msg">
       <div class="spinner"></div><br>
-      Carregando informacoes do lote...
+      Carregando informações do lote...
     </div>
   </div>
 
@@ -902,21 +1141,24 @@
 
     <div class="field" id="field-nome">
       <label for="nome">Nome completo</label>
-      <input type="text" id="nome" placeholder="Digite seu nome e sobrenome" autocomplete="name">
+      <div class="field-input-wrap">
+        <input type="text" id="nome" placeholder="Digite seu nome e sobrenome" autocomplete="name" maxlength="80">
+        <span class="field-check" aria-hidden="true">✓</span>
+      </div>
       <div class="field-error">Por favor, digite seu nome completo.</div>
     </div>
 
     <div class="breakdown" id="breakdown">
       <div class="bd-row"><span id="bd-lote-label">Ingresso</span><span id="bd-lote-preco">--</span></div>
-      <div class="bd-row"><span>Taxa de servico</span><span>R$ 1,50</span></div>
+      <div class="bd-row"><span>Taxa de serviço</span><span>R$ 1,50</span></div>
       <div class="bd-divider"></div>
       <div class="bd-row bd-total"><span>Total</span><span id="bd-total">--</span></div>
-      <div class="bd-note">As instrucoes de pagamento serao enviadas no WhatsApp apos a confirmacao.</div>
+      <div class="bd-note">As instruções de pagamento serão enviadas no WhatsApp após a confirmação.</div>
     </div>
 
-    <label class="terms-box">
+    <label class="terms-box" for="terms-check">
       <input type="checkbox" id="terms-check">
-      <span class="terms-text">Li e aceito os <a id="open-terms">termos de compra e politica de reembolso</a> do evento.</span>
+      <span class="terms-text">Li e aceito os <a id="open-terms" role="button" tabindex="0">termos de compra e política de reembolso</a> do evento.</span>
     </label>
 
     <button class="btn-buy" id="btn-comprar" disabled>
@@ -926,6 +1168,28 @@
       Finalizar no WhatsApp
     </button>
   </div>
+
+  <a class="instagram-btn reveal" href="https://www.instagram.com/hellhouse019/" target="_blank" rel="noopener">
+    <svg viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="igGrad" x1="0" y1="1" x2="1" y2="0">
+          <stop offset="0%" stop-color="#fdf497"/>
+          <stop offset="20%" stop-color="#fdb164"/>
+          <stop offset="45%" stop-color="#e6683c"/>
+          <stop offset="70%" stop-color="#cc2366"/>
+          <stop offset="100%" stop-color="#833ab4"/>
+        </linearGradient>
+      </defs>
+      <path fill="url(#igGrad)" d="M8 0C5.829 0 5.556.01 4.703.048 3.85.088 3.269.222 2.76.42a3.917 3.917 0 0 0-1.417.923A3.927 3.927 0 0 0 .42 2.76C.222 3.269.087 3.85.048 4.703.01 5.556 0 5.829 0 8.001c0 2.172.01 2.444.048 3.297.04.852.174 1.433.372 1.942.205.526.478.972.923 1.417.444.445.89.719 1.416.923.51.198 1.09.333 1.942.372C5.555 15.99 5.827 16 8 16s2.444-.01 3.298-.048c.851-.04 1.434-.174 1.943-.372a3.916 3.916 0 0 0 1.416-.923c.445-.445.718-.891.923-1.417.197-.509.332-1.09.372-1.942C15.99 10.445 16 10.173 16 8s-.01-2.445-.048-3.299c-.04-.851-.175-1.433-.372-1.941a3.926 3.926 0 0 0-.923-1.417A3.911 3.911 0 0 0 13.24.42c-.51-.198-1.092-.333-1.943-.372C10.443.01 10.172 0 8 0zm0 1.442c2.136 0 2.389.007 3.232.046.78.035 1.204.166 1.486.275.373.145.64.319.92.599.28.28.453.546.598.92.11.281.24.705.275 1.485.039.843.047 1.096.047 3.233 0 2.136-.008 2.389-.047 3.232-.035.78-.166 1.204-.275 1.486a2.47 2.47 0 0 1-.599.92c-.28.28-.546.453-.92.598-.28.11-.704.24-1.485.275-.843.039-1.096.047-3.233.047-2.136 0-2.389-.008-3.232-.047-.78-.035-1.204-.166-1.486-.275a2.478 2.478 0 0 1-.92-.599 2.48 2.48 0 0 1-.598-.92c-.11-.28-.24-.704-.275-1.485-.039-.843-.047-1.096-.047-3.233 0-2.136.008-2.389.047-3.232.035-.78.166-1.204.275-1.486.145-.373.319-.64.599-.92.28-.28.546-.453.92-.598.282-.11.705-.24 1.486-.275.843-.039 1.096-.047 3.232-.047zM8 3.892a4.108 4.108 0 1 0 0 8.216 4.108 4.108 0 0 0 0-8.216zm0 6.775a2.667 2.667 0 1 1 0-5.334 2.667 2.667 0 0 1 0 5.334zm5.23-6.937a.96.96 0 1 1-1.92 0 .96.96 0 0 1 1.92 0z"/>
+    </svg>
+    Siga no Instagram
+  </a>
+
+  <!-- LOCALIZAÇÃO -->
+  <a class="location-bar reveal" href="https://maps.google.com/?q=Estrada+da+Grama,+967,+Indaiatuba,+SP" target="_blank" rel="noopener">
+    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
+    <span>Estrada da Grama, 967 · Indaiatuba, SP</span>
+  </a>
 
   <a class="support-bar reveal" id="btn-suporte" target="_blank" rel="noopener">
     <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
@@ -940,12 +1204,12 @@
 <div class="modal-overlay" id="terms-modal">
   <div class="modal-box">
     <h3>Termos de compra</h3>
-    <p><strong>1. Confirmacao do pedido.</strong> Ao clicar em "Finalizar no WhatsApp", seus dados sao enviados para o organizador do evento, que confirmara a disponibilidade do lote e enviara as instrucoes de pagamento.</p>
-    <p><strong>2. Pagamento.</strong> O ingresso so e considerado garantido apos a confirmacao do pagamento pelo organizador.</p>
-    <p><strong>3. Taxa de servico.</strong> E cobrada uma taxa de R$ 1,50 por ingresso, referente ao processamento do pedido.</p>
-    <p><strong>4. Lotes.</strong> Os valores mudam automaticamente conforme o lote vigente. O preco valido e sempre o exibido no momento da confirmacao do pagamento, nao o momento do preenchimento do formulario.</p>
-    <p><strong>5. Reembolso.</strong> Ingressos nao sao reembolsaveis, exceto em caso de cancelamento do evento pelo organizador.</p>
-    <p><strong>6. Uso de imagem.</strong> Ao participar do evento, o convidado autoriza o uso de imagens registradas durante a festa para divulgacao em redes sociais.</p>
+    <p><strong>1. Confirmação do pedido.</strong> Ao clicar em "Finalizar no WhatsApp", seus dados são enviados para o organizador do evento, que confirmará a disponibilidade do lote e enviará as instruções de pagamento.</p>
+    <p><strong>2. Pagamento.</strong> O ingresso só é considerado garantido após a confirmação do pagamento pelo organizador.</p>
+    <p><strong>3. Taxa de serviço.</strong> É cobrada uma taxa de R$ 1,50 por ingresso, referente ao processamento do pedido.</p>
+    <p><strong>4. Lotes.</strong> Os valores mudam automaticamente conforme o lote vigente. O preço válido é sempre o exibido no momento da confirmação do pagamento, não o momento do preenchimento do formulário.</p>
+    <p><strong>5. Reembolso.</strong> Ingressos não são reembolsáveis, exceto em caso de cancelamento do evento pelo organizador.</p>
+    <p><strong>6. Uso de imagem.</strong> Ao participar do evento, o convidado autoriza o uso de imagens registradas durante a festa para divulgação em redes sociais.</p>
     <button class="modal-close" id="close-terms">Entendi</button>
   </div>
 </div>
@@ -953,8 +1217,8 @@
 <div class="warning-overlay" id="warning-overlay">
   <div class="warning-box">
     <span class="warning-icon">&#127903;</span>
-    <h3>Ingresso pessoal e intransferivel</h3>
-    <p>Apenas <strong id="warning-nome">esta pessoa</strong> podera entrar na festa com este ingresso. Confira se o nome esta correto.</p>
+    <h3>Ingresso pessoal e intransferível</h3>
+    <p>Apenas <strong id="warning-nome">esta pessoa</strong> poderá entrar na festa com este ingresso. Confira se o nome está correto.</p>
     <div class="warning-bar"><div class="warning-bar-fill" id="warning-bar-fill"></div></div>
     <div class="warning-actions">
       <button class="warning-cancel" id="warning-cancel">Cancelar</button>
@@ -966,160 +1230,236 @@
 <div class="toast" id="toast"></div>
 
 <script>
-// CONFIG
-const WHATSAPP = '5519995002222';
+// ── CONFIG ──────────────────────────────────────────────
+const WHATSAPP  = '5519995002222';
 const PARTY_DATE = new Date('2026-10-03T22:00:00');
-const RAW_URL = 'https://raw.githubusercontent.com/Rogihh/festa/refs/heads/main/lote';
-const TAXA = 1.50;
+const RAW_URL   = 'https://raw.githubusercontent.com/HalloweenPartysite/Halloween-Party/main/lote';
+const TAXA      = 1.50;
+const WARNING_SECONDS = 5; // BUG4 fix: centralizado aqui
 
 const LOTES = {
-  1: { nome: 'Lote 1', preco: 24 },
-  2: { nome: 'Lote 2', preco: 32 },
-  3: { nome: 'Lote 3', preco: 38 },
-  4: { nome: 'Entrada', preco: 40, soldOut: true },
+  1: { nome: 'Lote 1', preco: 18,  urgente: false },
+  2: { nome: 'Lote 2', preco: 24,  urgente: false },
+  3: { nome: 'Lote 3', preco: 32,  urgente: true  }, // MELHORIA 3
+  4: { nome: 'Entrada', preco: 38, soldOut: true  },
 };
 
-let currentLote = null;
+let currentLote  = null;
+let fetchInterval = null; // BUG2 fix: referência para limpar
 
-// PARTICLES
-const EMOJIS = ['\uD83C\uDF83','\uD83D\uDC7B','\uD83D\uDD77\uFE0F','\uD83E\uDD87','\uD83D\uDC80','\uD83D\uDD78\uFE0F'];
+// ── PARTICLES ───────────────────────────────────────────
+const EMOJIS = ['\uD83C\uDF83','\uD83D\uDC7B','\uD83D\uDD77\uFE0F','\uD83E\uDD87','\uD83D\uDC80','\uD83D\uDD78\uFE0F','\uD83C\uDF83','\uD83D\uDC7B'];
 const pc = document.getElementById('particles');
-for (let i = 0; i < 10; i++) {
+for (let i = 0; i < 16; i++) {
   const el = document.createElement('div');
   el.className = 'particle';
   el.textContent = EMOJIS[Math.floor(Math.random() * EMOJIS.length)];
   el.style.left = Math.random() * 100 + '%';
-  el.style.animationDuration = (9 + Math.random() * 14) + 's';
-  el.style.animationDelay = (Math.random() * 12) + 's';
-  el.style.fontSize = (1 + Math.random() * 1.1) + 'rem';
+  el.style.animationDuration = (10 + Math.random() * 16) + 's';
+  el.style.animationDelay    = (Math.random() * 14) + 's';
+  el.style.fontSize          = (0.9 + Math.random() * 1.3) + 'rem';
   pc.appendChild(el);
 }
 
-// SCROLL REVEAL
-const revealEls = document.querySelectorAll('.reveal');
+// ── SCROLL REVEAL ────────────────────────────────────────
 const observer = new IntersectionObserver((entries) => {
   entries.forEach(e => {
-    if (e.isIntersecting) {
-      e.target.classList.add('visible');
-      observer.unobserve(e.target);
-    }
+    if (e.isIntersecting) { e.target.classList.add('visible'); observer.unobserve(e.target); }
   });
 }, { threshold: 0.1 });
-revealEls.forEach(el => observer.observe(el));
+document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
 
-// COUNTDOWN
+// ── COUNTDOWN — MELHORIA 2 ───────────────────────────────
+const cdGrid = document.getElementById('cd-grid');
+const cdHoje = document.getElementById('cd-hoje');
+
 function updatePartyCountdown() {
   const diff = PARTY_DATE - new Date();
+
+  // É hoje (ou já passou)
   if (diff <= 0) {
-    ['p-days','p-hours','p-min','p-sec'].forEach(id => document.getElementById(id).textContent = '00');
+    cdGrid.style.display = 'none';
+    cdHoje.classList.add('show');
+    document.querySelector('.section-label') && (document.querySelector('.section-label').style.display = 'none');
+    clearInterval(partyCountdownInterval); // BUG fix: para de rodar após a festa começar
     return;
   }
+
   const d = Math.floor(diff / 86400000);
   const h = Math.floor((diff % 86400000) / 3600000);
   const m = Math.floor((diff % 3600000) / 60000);
   const s = Math.floor((diff % 60000) / 1000);
+
   document.getElementById('p-days').textContent  = String(d).padStart(2,'0');
   document.getElementById('p-hours').textContent = String(h).padStart(2,'0');
   document.getElementById('p-min').textContent   = String(m).padStart(2,'0');
+
   const secEl = document.getElementById('p-sec');
   secEl.textContent = String(s).padStart(2,'0');
   secEl.classList.remove('tick');
   void secEl.offsetWidth;
   secEl.classList.add('tick');
 
-  // pisca o box quando falta pouco
-  if (d === 0 && h < 1) {
+  if (d === 0 && h < 1)
     document.querySelectorAll('.cd-box').forEach(b => b.classList.add('pulse-red'));
-  }
 }
+let partyCountdownInterval;
 updatePartyCountdown();
-setInterval(updatePartyCountdown, 1000);
+partyCountdownInterval = setInterval(updatePartyCountdown, 1000);
 
-// RENDER CARD
+// ── RENDER CARD — MELHORIA 3 (badge urgência) ────────────
 function renderCard(lote) {
+  // sempre limpa badge de urgência antes de re-render
+  const urgEl = document.getElementById('lote-urgency-badge');
+  if (urgEl) urgEl.remove();
+
   const isSoldOutNow = lote === 4;
   if (isSoldOutNow) {
     document.getElementById('content').innerHTML = `
       <div class="sold-out-banner">
         <span class="so-icon">\uD83D\uDD6F\uFE0F</span>
-        <h3>Ingressos esgotados</h3>
-        <p>Os lotes online chegaram ao fim. Fique de olho no WhatsApp para novidades de ultima hora.</p>
-      </div>
-    `;
+        <h3>Lotes online esgotados</h3>
+        <p>Os ingressos antecipados acabaram, mas ainda dá pra entrar!<br>
+        Ingresso na porta: <strong>${formatBRL(LOTES[4].preco)}</strong> <span class="so-note">(sem taxa de serviço)</span></p>
+      </div>`;
     document.getElementById('form-card').style.display = 'none';
     return;
   }
+
+  // Badge urgência — MELHORIA 3
+  const info = LOTES[lote];
+  if (info && info.urgente) {
+    const badge = document.createElement('div');
+    badge.id = 'lote-urgency-badge';
+    badge.className = 'lote-urgency';
+    badge.innerHTML = '<span class="fire">🔥</span> Último lote!';
+    document.getElementById('lote-status').insertAdjacentElement('afterend', badge);
+  }
+
   document.getElementById('content').innerHTML = '';
   document.getElementById('form-card').style.display = 'block';
-  const info = LOTES[lote];
   if (info) {
-    const preco = info.preco;
-    const total = preco + TAXA;
+    const total = info.preco + TAXA;
     document.getElementById('bd-lote-label').textContent = 'Ingresso \u00B7 ' + info.nome;
-    document.getElementById('bd-lote-preco').textContent = formatBRL(preco);
-    document.getElementById('bd-total').textContent = formatBRL(total);
+    document.getElementById('bd-lote-preco').textContent = formatBRL(info.preco);
+    document.getElementById('bd-total').textContent      = formatBRL(total);
   }
 }
 
-function formatBRL(value) {
-  return value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+function formatBRL(v) {
+  return v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 }
 
-// FETCH LOTE
+// ── STATUS DOT ───────────────────────────────────────────
+const statusDot   = document.getElementById('status-dot');
+const statusLabel = document.getElementById('status-label');
+function setStatus(state, label) {
+  statusDot.className    = 'status-dot ' + state;
+  statusLabel.textContent = label;
+}
+
+// ── FETCH LOTE — BUG2 fix + MELHORIA 7 (visibility pause) ─
 async function fetchLote() {
+  if (document.hidden) return; // MELHORIA 7: não busca com aba oculta
+  setStatus('checking', 'Verificando disponibilidade...');
   try {
     const res = await fetch(RAW_URL + '?nocache=' + Date.now());
     if (!res.ok) throw new Error('Erro HTTP ' + res.status);
     const text = (await res.text()).trim();
-    const num = parseInt(text);
-    if (isNaN(num) || num < 1 || num > 4) throw new Error('Valor invalido');
+    const num  = parseInt(text);
+    if (isNaN(num) || num < 1 || num > 4) throw new Error('Valor inválido');
     currentLote = num;
     renderCard(num);
+    setStatus(num === 4 ? 'error' : 'live',
+              num === 4 ? 'Esgotado' : 'Disponível agora · ' + LOTES[num].nome);
   } catch (e) {
+    setStatus('error', 'Erro ao carregar');
+    const urg = document.getElementById('lote-urgency-badge');
+    if (urg) urg.remove();
     document.getElementById('content').innerHTML = `
       <div class="status-msg">
-        &#9888;&#65039; Nao foi possivel carregar as informacoes no momento.<br>
+        ⚠️ Não foi possível carregar as informações no momento.<br>
         <small style="font-size:0.72rem;margin-top:8px;display:block;opacity:0.6">Tentando novamente em instantes...</small>
       </div>`;
     document.getElementById('form-card').style.display = 'none';
   }
 }
-fetchLote();
-setInterval(fetchLote, 30000);
 
-// TOAST
-function showToast(msg) {
+function startFetchInterval() {
+  if (fetchInterval) clearInterval(fetchInterval); // BUG2 fix
+  fetchInterval = setInterval(fetchLote, 30000);
+}
+
+fetchLote();
+startFetchInterval();
+
+// MELHORIA 7: retoma polling quando aba volta ao foco
+document.addEventListener('visibilitychange', () => {
+  if (!document.hidden) { fetchLote(); startFetchInterval(); }
+  else { clearInterval(fetchInterval); fetchInterval = null; }
+});
+
+// ── TOAST — MELHORIA 8 (toast verde pra sucesso) ─────────
+function showToast(msg, type) {
   const t = document.getElementById('toast');
   t.textContent = msg;
-  t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 2800);
+  t.className   = 'toast show' + (type === 'success' ? ' success' : '');
+  clearTimeout(t._timer);
+  t._timer = setTimeout(() => t.classList.remove('show'), 2800);
 }
 
-// FORM VALIDATION
-const nomeInput = document.getElementById('nome');
+// ── FORM VALIDATION — MELHORIA 4 (check verde em tempo real) ─
+const nomeInput  = document.getElementById('nome');
 const termsCheck = document.getElementById('terms-check');
 const btnComprar = document.getElementById('btn-comprar');
-const fieldNome = document.getElementById('field-nome');
+const fieldNome  = document.getElementById('field-nome');
 
 function validateForm() {
-  const nomeOk = nomeInput.value.trim().split(' ').filter(Boolean).length >= 2;
+  const partes = nomeInput.value.trim().split(' ').filter(p => p.length >= 2);
+  const nomeOk = partes.length >= 2;
   btnComprar.disabled = !(nomeOk && termsCheck.checked);
+
+  // MELHORIA 4: feedback visual em tempo real
+  if (nomeOk) {
+    fieldNome.classList.remove('invalid');
+    fieldNome.classList.add('valid');
+  } else {
+    fieldNome.classList.remove('valid');
+  }
   return nomeOk;
 }
-nomeInput.addEventListener('input', () => { fieldNome.classList.remove('invalid'); validateForm(); });
+
+nomeInput.addEventListener('input', () => {
+  const pos = nomeInput.selectionStart;
+  const capitalized = nomeInput.value.replace(/(^|\s)(\S)/g, (m, sep, ch) => sep + ch.toLocaleUpperCase('pt-BR'));
+  if (capitalized !== nomeInput.value) {
+    nomeInput.value = capitalized;
+    nomeInput.setSelectionRange(pos, pos);
+  }
+  fieldNome.classList.remove('invalid');
+  validateForm();
+});
+// MELHORIA (surpresa): Enter no campo nome já aciona o botão de comprar
+nomeInput.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') { e.preventDefault(); btnComprar.click(); }
+});
 termsCheck.addEventListener('change', validateForm);
 
-// MODAL TERMOS
-const modal = document.getElementById('terms-modal');
-document.getElementById('open-terms').addEventListener('click', (e) => { e.preventDefault(); modal.classList.add('open'); });
-document.getElementById('close-terms').addEventListener('click', () => modal.classList.remove('open'));
-modal.addEventListener('click', (e) => { if (e.target === modal) modal.classList.remove('open'); });
+// ── MODAL TERMOS — BUG fix: trava o scroll do fundo ──────
+const modal      = document.getElementById('terms-modal');
+const openTermsEl = document.getElementById('open-terms');
+function openTermsModal() { modal.classList.add('open'); document.body.style.overflow = 'hidden'; }
+function closeTermsModal() { modal.classList.remove('open'); document.body.style.overflow = ''; }
+openTermsEl.addEventListener('click',   (e) => { e.preventDefault(); openTermsModal(); });
+openTermsEl.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openTermsModal(); } });
+document.getElementById('close-terms').addEventListener('click', closeTermsModal);
+modal.addEventListener('click', (e) => { if (e.target === modal) closeTermsModal(); });
 
-// SUPORTE
+// ── SUPORTE ──────────────────────────────────────────────
 document.getElementById('btn-suporte').href =
-  'https://wa.me/' + WHATSAPP + '?text=' + encodeURIComponent('Ola! Preciso de Suporte!');
+  'https://wa.me/' + WHATSAPP + '?text=' + encodeURIComponent('Olá! Preciso de suporte.');
 
-// SUBMIT — mensagem 100% encoded, sem emoji raw na URL
+// ── SUBMIT ───────────────────────────────────────────────
 btnComprar.addEventListener('click', () => {
   const nomeOk = validateForm();
   if (!nomeOk) {
@@ -1129,49 +1469,55 @@ btnComprar.addEventListener('click', () => {
     showToast('Digite seu nome completo para continuar.');
     return;
   }
-  if (!termsCheck.checked) { showToast('Voce precisa aceitar os termos para continuar.'); return; }
-  if (!currentLote) { showToast('Aguarde o carregamento das informacoes.'); return; }
+  if (!termsCheck.checked) { showToast('Você precisa aceitar os termos para continuar.'); return; }
+  if (!currentLote)        { showToast('Aguarde o carregamento das informações.'); return; }
 
-  const nome = nomeInput.value.trim();
-const msgText =
-  `Olá!\n\n` +
-  `*Nome:* ${nome}\n\n` +
-  `*Quero comprar meu ingresso para a Halloween Party!*`;
-
-const url = `https://wa.me/SEUNUMERO?text=${encodeURIComponent(msgText)}`;
-
-  const waUrl = 'https://wa.me/' + WHATSAPP + '?text=' + encodeURIComponent(msgText);
+  const nome    = nomeInput.value.trim();
+  const msgText = `Olá!\n\n*Nome:* ${nome}\n\n*Quero comprar meu ingresso para a Halloween Party!*`;
+  const waUrl   = 'https://wa.me/' + WHATSAPP + '?text=' + encodeURIComponent(msgText);
+  btnComprar.classList.add('clicked'); // para a animação de pulse após o clique
   showPersonalWarning(nome, waUrl);
 });
 
-// WARNING OVERLAY
-const warningOverlay = document.getElementById('warning-overlay');
-const warningBarFill = document.getElementById('warning-bar-fill');
-const warningNome = document.getElementById('warning-nome');
+// ── WARNING OVERLAY — BUG3/4 fix + MELHORIA 5 ────────────
+const warningOverlay  = document.getElementById('warning-overlay');
+const warningBarFill  = document.getElementById('warning-bar-fill');
+const warningNome     = document.getElementById('warning-nome');
 const warningContinue = document.getElementById('warning-continue');
 let warningTimer = null;
-let pendingUrl = null;
+let pendingUrl   = null;
+
+function resetWarningBtn() { // BUG4 fix: centralizado
+  warningContinue.disabled    = true;
+  warningContinue.textContent = `Continuar (${WARNING_SECONDS})`;
+}
 
 function showPersonalWarning(nome, redirectUrl) {
   warningNome.textContent = nome;
   pendingUrl = redirectUrl;
   warningBarFill.classList.remove('run');
   void warningBarFill.offsetWidth;
+
+  // MELHORIA 5: re-trigger da animação de shake
+  warningOverlay.classList.remove('open');
+  void warningOverlay.offsetWidth;
   warningOverlay.classList.add('open');
+  document.body.style.overflow = 'hidden'; // BUG fix: trava scroll do fundo
+
+  btnComprar.disabled = true;
   requestAnimationFrame(() => warningBarFill.classList.add('run'));
 
-  let secondsLeft = 5;
-  warningContinue.disabled = true;
-  warningContinue.textContent = 'Continuar (' + secondsLeft + ')';
-  clearInterval(warningTimer);
+  let secondsLeft = WARNING_SECONDS;
+  resetWarningBtn();
+  clearInterval(warningTimer); // BUG2/3 fix
   warningTimer = setInterval(() => {
     secondsLeft--;
     if (secondsLeft <= 0) {
       clearInterval(warningTimer);
-      warningContinue.disabled = false;
+      warningContinue.disabled    = false;
       warningContinue.textContent = 'Continuar';
     } else {
-      warningContinue.textContent = 'Continuar (' + secondsLeft + ')';
+      warningContinue.textContent = `Continuar (${secondsLeft})`;
     }
   }, 1000);
 }
@@ -1179,16 +1525,37 @@ function showPersonalWarning(nome, redirectUrl) {
 warningContinue.addEventListener('click', () => {
   if (warningContinue.disabled || !pendingUrl) return;
   warningOverlay.classList.remove('open');
+  document.body.style.overflow = ''; // BUG fix: destrava scroll do fundo
   window.open(pendingUrl, '_blank');
   pendingUrl = null;
+  btnComprar.classList.remove('clicked');
+  validateForm();
 });
 
 document.getElementById('warning-cancel').addEventListener('click', () => {
-  clearInterval(warningTimer);
+  clearInterval(warningTimer); // BUG3 fix
   warningOverlay.classList.remove('open');
+  document.body.style.overflow = ''; // BUG fix: destrava scroll do fundo
   pendingUrl = null;
-  warningContinue.disabled = true;
-  warningContinue.textContent = 'Continuar (5)';
+  resetWarningBtn(); // BUG4 fix
+  btnComprar.classList.remove('clicked');
+  validateForm();
+});
+
+// ── ESC fecha modal/overlay abertos — MELHORIA (surpresa) ─
+document.addEventListener('keydown', (e) => {
+  if (e.key !== 'Escape') return;
+  if (warningOverlay.classList.contains('open')) {
+    document.getElementById('warning-cancel').click();
+  } else if (modal.classList.contains('open')) {
+    closeTermsModal();
+  }
+});
+
+// BUG3 fix: limpar timer ao sair da página
+window.addEventListener('pagehide', () => {
+  clearInterval(warningTimer);
+  clearInterval(fetchInterval);
 });
 </script>
 </body>
