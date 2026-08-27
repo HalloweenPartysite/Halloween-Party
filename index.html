@@ -1,0 +1,1195 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Halloween Party 🎃</title>
+<meta name="description" content="Ingressos para a Halloween Party · 03 de Outubro de 2026. Garanta o seu antes que esgote.">
+<meta property="og:title" content="Halloween Party 🎃">
+<meta property="og:description" content="Ingressos para a Halloween Party · 03 de Outubro de 2026. Garanta o seu antes que esgote.">
+<meta property="og:type" content="website">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%8E%83%3C/text%3E%3C/svg%3E">
+<meta name="theme-color" content="#080505">
+<link href="https://fonts.googleapis.com/css2?family=Creepster&family=Cinzel:wght@500;600;700;900&family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --red-deep: #5c0f16;
+    --red: #8a1420;
+    --red-bright: #b81f2c;
+    --red-glow: #e0384a;
+    --black: #080505;
+    --card: #150e0d;
+    --card-2: #1c1210;
+    --card-border: #34211d;
+    --card-border-lit: #4a2c26;
+    --gold: #c9a24b;
+    --gold-bright: #e0bc6d;
+    --text: #f2e9e0;
+    --text-dim: #b3a196;
+    --text-faint: #6b5c53;
+    --green: #25D366;
+    --danger: #e05a4d;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--black);
+    background-image:
+      radial-gradient(ellipse 90% 60% at 50% -15%, rgba(138,20,32,0.28), transparent 60%),
+      radial-gradient(ellipse 70% 45% at 100% 105%, rgba(201,162,75,0.08), transparent 60%),
+      radial-gradient(ellipse 50% 30% at 0% 40%, rgba(90,10,16,0.18), transparent 60%);
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+    position: relative;
+  }
+
+  /* textura sutil de ruido */
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    opacity: 0.035;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  /* ── LIGHTNING FLASHES ── */
+  .lightning {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    background: rgba(255,255,255,0);
+    animation: lightning 8s ease-in-out infinite;
+  }
+  @keyframes lightning {
+    0%, 88%, 92%, 96%, 100% { background: rgba(255,255,255,0); }
+    89%   { background: rgba(180,30,50,0.06); }
+    90%   { background: rgba(255,255,255,0); }
+    93%   { background: rgba(180,30,50,0.04); }
+    94%   { background: rgba(255,255,255,0); }
+    97%   { background: rgba(180,30,50,0.03); }
+  }
+
+  /* ── PARTICLES ── */
+  .particles {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    pointer-events: none;
+    z-index: 0;
+    overflow: hidden;
+  }
+  .particle {
+    position: absolute;
+    font-size: 1.3rem;
+    opacity: 0;
+    animation: fall linear infinite;
+    filter: drop-shadow(0 0 8px rgba(224,56,74,0.5)) grayscale(0.1);
+  }
+  @keyframes fall {
+    0%   { transform: translateY(-60px) translateX(0) rotate(0deg); opacity: 0.6; }
+    25%  { transform: translateY(25vh) translateX(18px) rotate(90deg); opacity: 0.5; }
+    50%  { transform: translateY(55vh) translateX(-18px) rotate(180deg); opacity: 0.4; }
+    75%  { transform: translateY(85vh) translateX(12px) rotate(270deg); opacity: 0.2; }
+    100% { transform: translateY(110vh) translateX(0) rotate(360deg); opacity: 0; }
+  }
+
+  /* ── ENTRADA ANIMADA ── */
+  @keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(22px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes fadeInDown {
+    from { opacity: 0; transform: translateY(-18px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .hero { animation: fadeInDown 0.8s cubic-bezier(0.22,1,0.36,1) both; animation-delay: 0s; }
+  .party-date { animation: fadeInUp 0.7s cubic-bezier(0.22,1,0.36,1) both; animation-delay: 0.15s; }
+  .countdown-party { animation: fadeInUp 0.7s cubic-bezier(0.22,1,0.36,1) both; animation-delay: 0.25s; }
+  #content { animation: fadeInUp 0.7s cubic-bezier(0.22,1,0.36,1) both; animation-delay: 0.35s; }
+  .form-card { animation: fadeInUp 0.7s cubic-bezier(0.22,1,0.36,1) both; animation-delay: 0.45s; }
+  .support-bar { animation: fadeInUp 0.7s cubic-bezier(0.22,1,0.36,1) both; animation-delay: 0.55s; }
+  footer { animation: fadeInUp 0.7s cubic-bezier(0.22,1,0.36,1) both; animation-delay: 0.65s; }
+
+  .wrapper {
+    position: relative;
+    z-index: 1;
+    max-width: 560px;
+    margin: 0 auto;
+    padding: 0 16px 70px;
+  }
+
+  /* ── HERO ── */
+  .hero {
+    text-align: center;
+    padding: 44px 0 6px;
+    position: relative;
+  }
+  .drip-svg {
+    display: block;
+    margin: 0 auto 22px;
+    overflow: visible;
+    filter: drop-shadow(0 0 12px rgba(184,31,44,0.6));
+  }
+  .hero-eyebrow {
+    font-family: 'Inter', sans-serif;
+    font-size: 0.66rem;
+    letter-spacing: 5px;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin: 22px 0 4px;
+    animation: eyebrowGlow 3s ease-in-out infinite;
+  }
+  @keyframes eyebrowGlow {
+    0%, 100% { opacity: 0.8; letter-spacing: 5px; }
+    50% { opacity: 1; letter-spacing: 5.5px; }
+  }
+
+  .hero h1 {
+    font-family: 'Creepster', cursive;
+    font-weight: 400;
+    font-size: clamp(2.6rem, 13vw, 4rem);
+    color: var(--red-glow);
+    letter-spacing: 1px;
+    line-height: 1;
+    text-shadow:
+      0 0 18px rgba(224,56,74,0.55),
+      0 0 46px rgba(138,20,32,0.5),
+      2px 3px 0 rgba(0,0,0,0.6);
+    animation: titleFlicker 4.5s ease-in-out infinite;
+  }
+  @keyframes titleFlicker {
+    0%, 100% {
+      text-shadow:
+        0 0 18px rgba(224,56,74,0.55),
+        0 0 46px rgba(138,20,32,0.5),
+        2px 3px 0 rgba(0,0,0,0.6);
+    }
+    30% {
+      text-shadow:
+        0 0 30px rgba(224,56,74,0.85),
+        0 0 70px rgba(138,20,32,0.75),
+        0 0 100px rgba(224,56,74,0.3),
+        2px 3px 0 rgba(0,0,0,0.6);
+    }
+    32% {
+      text-shadow:
+        0 0 12px rgba(224,56,74,0.3),
+        0 0 30px rgba(138,20,32,0.3),
+        2px 3px 0 rgba(0,0,0,0.6);
+    }
+    34% {
+      text-shadow:
+        0 0 28px rgba(224,56,74,0.8),
+        0 0 65px rgba(138,20,32,0.7),
+        2px 3px 0 rgba(0,0,0,0.6);
+    }
+    75% {
+      text-shadow:
+        0 0 14px rgba(224,56,74,0.45),
+        0 0 38px rgba(138,20,32,0.4),
+        2px 3px 0 rgba(0,0,0,0.6);
+    }
+  }
+  .hero h1 .accent {
+    display: block;
+    font-family: 'Creepster', cursive;
+    font-size: 0.5em;
+    color: var(--text);
+    letter-spacing: 3px;
+    margin-top: 6px;
+    text-shadow: 0 0 14px rgba(224,56,74,0.4), 2px 2px 0 rgba(0,0,0,0.6);
+  }
+
+  .hero-rule {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    justify-content: center;
+    margin: 20px auto 0;
+    max-width: 240px;
+  }
+  .hero-rule::before, .hero-rule::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--card-border-lit));
+    animation: ruleGlow 4s ease-in-out infinite;
+  }
+  .hero-rule::after { background: linear-gradient(90deg, var(--card-border-lit), transparent); }
+  @keyframes ruleGlow {
+    0%, 100% { opacity: 0.6; }
+    50% { opacity: 1; }
+  }
+  .hero-rule .diamond {
+    width: 7px; height: 7px;
+    background: var(--gold);
+    transform: rotate(45deg);
+    flex-shrink: 0;
+    animation: diamondPulse 2s ease-in-out infinite;
+    box-shadow: 0 0 8px rgba(201,162,75,0.6);
+  }
+  @keyframes diamondPulse {
+    0%, 100% { transform: rotate(45deg) scale(1); box-shadow: 0 0 8px rgba(201,162,75,0.6); }
+    50% { transform: rotate(45deg) scale(1.3); box-shadow: 0 0 16px rgba(201,162,75,0.9); }
+  }
+
+  /* ── DATA DA FESTA ── */
+  .party-date {
+    text-align: center;
+    margin: 28px 0 30px;
+    background: linear-gradient(160deg, var(--card-2), #100907);
+    border: 1px solid var(--card-border);
+    border-radius: 4px;
+    padding: 20px 24px;
+    position: relative;
+    animation: fadeInUp 0.7s cubic-bezier(0.22,1,0.36,1) both, dateGlow 3.6s ease-in-out infinite;
+    animation-delay: 0.15s, 1.2s;
+  }
+  @keyframes dateGlow {
+    0%, 100% { border-color: var(--card-border); box-shadow: 0 0 0 rgba(201,162,75,0); }
+    50% { border-color: rgba(201,162,75,0.5); box-shadow: 0 0 30px rgba(201,162,75,0.15), inset 0 0 20px rgba(201,162,75,0.03); }
+  }
+  .party-date::before {
+    content: '';
+    position: absolute;
+    inset: 5px;
+    border: 1px solid rgba(201,162,75,0.15);
+    border-radius: 2px;
+    pointer-events: none;
+  }
+  .party-date .label {
+    font-family: 'Inter', sans-serif;
+    font-size: 0.62rem;
+    letter-spacing: 3.5px;
+    text-transform: uppercase;
+    color: var(--text-faint);
+    margin-bottom: 8px;
+  }
+  .party-date .date-val {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.7rem;
+    font-weight: 700;
+    font-style: italic;
+    color: var(--gold-bright);
+    letter-spacing: 0.5px;
+  }
+
+  /* ── COUNTDOWN ── */
+  .countdown-party { text-align: center; margin-bottom: 34px; }
+  .section-label {
+    font-family: 'Inter', sans-serif;
+    font-size: 0.65rem;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--text-faint);
+    margin-bottom: 14px;
+  }
+  .cd-grid { display: flex; justify-content: center; gap: 10px; }
+  .cd-box {
+    background: var(--card);
+    border: 1px solid var(--card-border);
+    border-radius: 8px;
+    padding: 13px 10px 10px;
+    min-width: 64px;
+    text-align: center;
+    position: relative;
+    transition: border-color 0.3s, box-shadow 0.3s;
+  }
+  .cd-box::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(201,162,75,0.3), transparent);
+  }
+  .cd-box.pulse-red {
+    border-color: rgba(224,56,74,0.5);
+    box-shadow: 0 0 16px rgba(224,56,74,0.2);
+  }
+  .cd-num {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 2.1rem;
+    font-weight: 700;
+    color: var(--red-glow);
+    line-height: 1;
+    display: block;
+    font-variant-numeric: tabular-nums;
+  }
+  .cd-num.tick { animation: cdBump 0.35s ease; }
+  @keyframes cdBump {
+    0% { transform: scale(1); }
+    35% { transform: scale(1.22); color: var(--gold-bright); }
+    100% { transform: scale(1); }
+  }
+  .cd-unit {
+    font-size: 0.56rem;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--text-faint);
+    margin-top: 5px;
+    display: block;
+  }
+
+  /* ── SOLD OUT BANNER ── */
+  .sold-out-banner {
+    text-align: center;
+    background: linear-gradient(155deg, var(--card), #150c0c);
+    border: 1px solid var(--card-border-lit);
+    border-radius: 16px;
+    padding: 30px 22px;
+    margin-bottom: 22px;
+  }
+  .sold-out-banner .so-icon { font-size: 2rem; margin-bottom: 10px; display: block; }
+  .sold-out-banner h3 {
+    font-family: 'Cinzel', serif;
+    font-size: 1.1rem;
+    color: var(--gold-bright);
+    letter-spacing: 1px;
+    margin-bottom: 8px;
+  }
+  .sold-out-banner p {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.1rem;
+    font-style: italic;
+    color: var(--text-dim);
+  }
+
+  /* ── BTN COMPRAR ── */
+  .btn-buy {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    width: 100%;
+    background: linear-gradient(135deg, #25D366 0%, #1ebe58 100%);
+    color: #fff;
+    font-family: 'Inter', sans-serif;
+    font-size: 1rem;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+    text-align: center;
+    padding: 16px;
+    border-radius: 12px;
+    border: none;
+    cursor: pointer;
+    text-decoration: none;
+    transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+  .btn-buy::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(255,255,255,0.12) 0%, transparent 60%);
+    pointer-events: none;
+  }
+  .btn-buy:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(37,211,102,0.35); }
+  .btn-buy:active:not(:disabled) { transform: scale(0.98); }
+  .btn-buy svg { width: 20px; height: 20px; fill: #fff; flex-shrink: 0; }
+  .btn-buy:disabled {
+    background: #252525;
+    color: #555;
+    cursor: not-allowed;
+    transform: none;
+    animation: none;
+  }
+  .btn-buy:not(:disabled) { animation: buyPulse 2.4s ease-in-out infinite; }
+  @keyframes buyPulse {
+    0%, 100% { box-shadow: 0 0 0 rgba(37,211,102,0); }
+    50% { box-shadow: 0 0 24px rgba(37,211,102,0.5), 0 4px 16px rgba(37,211,102,0.2); }
+  }
+
+  /* ── FORM CARD ── */
+  .form-card {
+    background: linear-gradient(160deg, var(--card), #120b09);
+    border: 1px solid var(--card-border);
+    border-radius: 16px;
+    padding: 26px 24px;
+    margin-bottom: 20px;
+    position: relative;
+    overflow: hidden;
+  }
+  .form-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(224,56,74,0.4), rgba(201,162,75,0.3), transparent);
+  }
+  .form-card h2 {
+    font-family: 'Cinzel', serif;
+    font-size: 1.05rem;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    color: var(--text);
+    margin-bottom: 4px;
+  }
+  .form-card .form-sub {
+    font-size: 0.8rem;
+    color: var(--text-faint);
+    margin-bottom: 20px;
+  }
+
+  /* ── FIELDS ── */
+  .field { margin-bottom: 16px; }
+  .field label {
+    display: block;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.68rem;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    margin-bottom: 7px;
+  }
+  .field input {
+    width: 100%;
+    background: rgba(8,5,5,0.8);
+    border: 1px solid var(--card-border);
+    border-radius: 10px;
+    padding: 13px 14px;
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    font-size: 0.95rem;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  .field input:focus {
+    border-color: var(--red-glow);
+    box-shadow: 0 0 0 3px rgba(224,56,74,0.12);
+  }
+  .field input::placeholder { color: var(--text-faint); }
+  .field-error {
+    display: none;
+    font-size: 0.72rem;
+    color: var(--danger);
+    margin-top: 6px;
+  }
+  .field.invalid input { border-color: var(--danger); animation: shake 0.4s ease; box-shadow: 0 0 0 3px rgba(224,90,77,0.15); }
+  .field.invalid .field-error { display: block; }
+  @keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    20% { transform: translateX(-7px); }
+    40% { transform: translateX(6px); }
+    60% { transform: translateX(-5px); }
+    80% { transform: translateX(4px); }
+  }
+
+  /* ── PRICE BREAKDOWN ── */
+  .breakdown {
+    background: rgba(8,5,5,0.7);
+    border: 1px solid var(--card-border);
+    border-radius: 12px;
+    padding: 16px 18px;
+    margin: 18px 0 20px;
+    position: relative;
+    overflow: hidden;
+  }
+  .breakdown::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(201,162,75,0.2), transparent);
+  }
+  .bd-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.85rem;
+    color: var(--text-dim);
+    padding: 6px 0;
+  }
+  .bd-note {
+    font-size: 0.76rem;
+    color: var(--text-faint);
+    line-height: 1.5;
+    padding-top: 4px;
+  }
+  .bd-divider {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--card-border-lit), transparent);
+    margin: 4px 0;
+  }
+  .bd-total { font-weight: 700; }
+  .bd-total span:first-child { color: var(--text); }
+  .bd-total span:last-child {
+    color: var(--gold-bright);
+    font-family: 'Inter', sans-serif;
+    font-size: 1.15rem;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+  }
+
+  /* ── CHECKBOX TERMOS ── */
+  .terms-box {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    margin-bottom: 20px;
+    cursor: pointer;
+    user-select: none;
+  }
+  .terms-box input[type="checkbox"] {
+    appearance: none;
+    -webkit-appearance: none;
+    width: 20px; height: 20px;
+    min-width: 20px;
+    border: 1.5px solid var(--card-border);
+    border-radius: 5px;
+    background: #100a08;
+    cursor: pointer;
+    position: relative;
+    margin-top: 1px;
+    transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
+  }
+  .terms-box input[type="checkbox"]:checked {
+    background: var(--red-glow);
+    border-color: var(--red-glow);
+    box-shadow: 0 0 8px rgba(224,56,74,0.4);
+  }
+  .terms-box input[type="checkbox"]:checked::after {
+    content: '';
+    position: absolute;
+    left: 6px; top: 2px;
+    width: 5px; height: 10px;
+    border: solid var(--black);
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+  }
+  .terms-box .terms-text {
+    font-size: 0.78rem;
+    color: var(--text-dim);
+    line-height: 1.5;
+  }
+  .terms-box .terms-text a {
+    color: var(--gold);
+    text-decoration: underline;
+    cursor: pointer;
+    transition: color 0.2s;
+  }
+  .terms-box .terms-text a:hover { color: var(--gold-bright); }
+
+  /* ── MODAL TERMOS ── */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.8);
+    backdrop-filter: blur(4px);
+    z-index: 100;
+    align-items: flex-end;
+    justify-content: center;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal-box {
+    background: linear-gradient(160deg, var(--card), #120b09);
+    border: 1px solid var(--card-border-lit);
+    border-radius: 20px 20px 0 0;
+    max-width: 560px;
+    width: 100%;
+    max-height: 78vh;
+    overflow-y: auto;
+    padding: 24px 22px 30px;
+    animation: slideUp 0.3s cubic-bezier(0.22,1,0.36,1);
+  }
+  @keyframes slideUp { from { transform: translateY(40px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+  .modal-box h3 {
+    font-family: 'Cinzel', serif;
+    color: var(--gold);
+    margin-bottom: 14px;
+    font-size: 1.05rem;
+    letter-spacing: 0.5px;
+  }
+  .modal-box p, .modal-box li {
+    font-size: 0.83rem;
+    color: var(--text-dim);
+    line-height: 1.6;
+    margin-bottom: 10px;
+  }
+  .modal-box ul { padding-left: 18px; margin-bottom: 10px; }
+  .modal-close {
+    display: block;
+    width: 100%;
+    background: var(--red-glow);
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    padding: 13px;
+    font-family: 'Inter', sans-serif;
+    font-weight: 600;
+    font-size: 0.9rem;
+    margin-top: 16px;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.15s;
+  }
+  .modal-close:hover { background: #f04558; transform: translateY(-1px); }
+
+  /* ── STATUS / SPINNER ── */
+  .status-msg {
+    text-align: center;
+    color: var(--text-dim);
+    font-size: 0.88rem;
+    padding: 40px 0;
+  }
+  .spinner {
+    display: inline-block;
+    width: 28px; height: 28px;
+    border: 3px solid rgba(138,20,32,0.2);
+    border-top-color: var(--red-glow);
+    border-radius: 50%;
+    animation: spin 0.75s linear infinite;
+    margin-bottom: 12px;
+    box-shadow: 0 0 12px rgba(224,56,74,0.2);
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ── SUPORTE ── */
+  .support-bar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    background: transparent;
+    border: 1px solid var(--card-border);
+    color: var(--text-dim);
+    font-family: 'Inter', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 500;
+    text-align: center;
+    padding: 13px;
+    border-radius: 12px;
+    cursor: pointer;
+    text-decoration: none;
+    margin-top: 4px;
+    transition: border-color 0.3s, color 0.3s, box-shadow 0.3s, transform 0.2s;
+  }
+  .support-bar:hover {
+    border-color: var(--gold);
+    color: var(--gold);
+    box-shadow: 0 0 16px rgba(201,162,75,0.12);
+    transform: translateY(-1px);
+  }
+  .support-bar svg { width: 16px; height: 16px; fill: currentColor; flex-shrink: 0; }
+
+  footer {
+    text-align: center;
+    font-size: 0.68rem;
+    color: var(--text-faint);
+    margin-top: 22px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+
+  /* ── WARNING OVERLAY ── */
+  .warning-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.85);
+    backdrop-filter: blur(6px);
+    z-index: 150;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+  }
+  .warning-overlay.open { display: flex; }
+  .warning-box {
+    background: linear-gradient(155deg, var(--card), #150c0c);
+    border: 1px solid var(--card-border-lit);
+    border-radius: 18px;
+    max-width: 380px;
+    width: 100%;
+    padding: 30px 26px 24px;
+    text-align: center;
+    animation: warnIn 0.3s cubic-bezier(0.22,1,0.36,1);
+    position: relative;
+    overflow: hidden;
+  }
+  .warning-box::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--red-glow), var(--gold), transparent);
+  }
+  @keyframes warnIn { from { transform: scale(0.9) translateY(20px); opacity: 0; } to { transform: scale(1) translateY(0); opacity: 1; } }
+  .warning-icon { font-size: 2.4rem; display: block; margin-bottom: 12px; animation: iconBounce 1.8s ease-in-out infinite; }
+  @keyframes iconBounce {
+    0%, 100% { transform: translateY(0) rotate(0deg); }
+    25% { transform: translateY(-6px) rotate(-5deg); }
+    75% { transform: translateY(2px) rotate(5deg); }
+  }
+  .warning-box h3 {
+    font-family: 'Cinzel', serif;
+    font-size: 1.05rem;
+    color: var(--gold-bright);
+    letter-spacing: 0.5px;
+    margin-bottom: 10px;
+  }
+  .warning-box p {
+    font-size: 0.88rem;
+    color: var(--text-dim);
+    line-height: 1.55;
+    margin-bottom: 18px;
+  }
+  .warning-box p strong { color: var(--text); }
+  .warning-bar {
+    height: 4px;
+    background: rgba(255,255,255,0.06);
+    border-radius: 2px;
+    overflow: hidden;
+    margin-bottom: 14px;
+  }
+  .warning-bar-fill {
+    height: 100%;
+    width: 100%;
+    background: linear-gradient(90deg, var(--red-glow), var(--gold));
+    transform-origin: left;
+    transform: scaleX(1);
+    transition: transform 5s linear;
+  }
+  .warning-bar-fill.run { transform: scaleX(0); }
+  .warning-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 4px;
+  }
+  .warning-cancel {
+    flex: 1;
+    background: transparent;
+    color: var(--text-dim);
+    border: 1px solid var(--card-border);
+    border-radius: 10px;
+    padding: 13px;
+    font-family: 'Inter', sans-serif;
+    font-weight: 500;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: border-color 0.2s, color 0.2s, background 0.2s;
+  }
+  .warning-cancel:hover { border-color: var(--text-faint); color: var(--text); background: rgba(255,255,255,0.04); }
+  .warning-continue {
+    flex: 1;
+    background: var(--green);
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    padding: 13px;
+    font-family: 'Inter', sans-serif;
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.15s;
+  }
+  .warning-continue:hover:not(:disabled) { background: #1ebe58; transform: translateY(-1px); }
+  .warning-continue:disabled {
+    background: #222;
+    color: var(--text-faint);
+    cursor: not-allowed;
+  }
+
+  /* ── TOAST ── */
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: var(--danger);
+    color: #fff;
+    padding: 12px 22px;
+    border-radius: 10px;
+    font-size: 0.85rem;
+    font-family: 'Inter', sans-serif;
+    z-index: 200;
+    opacity: 0;
+    pointer-events: none;
+    transition: all 0.3s cubic-bezier(0.22,1,0.36,1);
+    max-width: 90%;
+    text-align: center;
+    box-shadow: 0 4px 20px rgba(224,90,77,0.4);
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  /* ── SCROLL REVEAL ── */
+  .reveal {
+    opacity: 0;
+    transform: translateY(16px);
+    transition: opacity 0.6s ease, transform 0.6s ease;
+  }
+  .reveal.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+</style>
+</head>
+<body>
+
+<div class="lightning"></div>
+<div class="particles" id="particles"></div>
+
+<div class="wrapper">
+
+  <div class="hero">
+    <svg class="drip-svg" width="240" height="34" viewBox="0 0 240 34" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="dripGrad" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#b81f2c"/>
+          <stop offset="100%" stop-color="#5c0f16"/>
+        </linearGradient>
+        <linearGradient id="dripLineGrad" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0%" stop-color="transparent"/>
+          <stop offset="50%" stop-color="#b81f2c"/>
+          <stop offset="100%" stop-color="transparent"/>
+        </linearGradient>
+        <filter id="dripGlow" x="-50%" y="-50%" width="200%" height="200%">
+          <feGaussianBlur stdDeviation="2.5" result="blur"/>
+          <feMerge>
+            <feMergeNode in="blur"/>
+            <feMergeNode in="SourceGraphic"/>
+          </feMerge>
+        </filter>
+      </defs>
+      <g filter="url(#dripGlow)">
+        <rect x="0" y="0" width="240" height="1.4" fill="url(#dripLineGrad)"/>
+        <path d="M27.0,0 C27.0,4.2 24.2,9.8 24.2,9.8 A2.8,2.8 0 1,0 29.8,9.8 C29.8,4.2 33.0,0 33.0,0 Z" fill="url(#dripGrad)"/>
+        <path d="M62.3,0 C62.3,9.2 56.5,21.5 56.5,21.5 A3.5,3.5 0 1,0 63.5,21.5 C63.5,9.2 69.8,0 69.8,0 Z" fill="url(#dripGrad)"/>
+        <path d="M99.0,0 C99.0,5.9 94.8,13.5 94.8,13.5 A3.0,3.0 0 1,0 101.0,13.5 C101.0,5.9 105.0,0 105.0,0 Z" fill="url(#dripGrad)"/>
+        <path d="M135.3,0 C135.3,11.8 128.7,27.3 128.7,27.3 A3.7,3.7 0 1,0 136.3,27.3 C136.3,11.8 142.8,0 142.8,0 Z" fill="url(#dripGrad)"/>
+        <path d="M171.3,0 C171.3,6.7 166.7,15.4 166.7,15.4 A3.0,3.0 0 1,0 172.7,15.4 C172.7,6.7 177.3,0 177.3,0 Z" fill="url(#dripGrad)"/>
+        <path d="M207.5,0 C207.5,8.4 202.2,19.3 202.2,19.3 A3.2,3.2 0 1,0 208.8,19.3 C208.8,8.4 214.5,0 214.5,0 Z" fill="url(#dripGrad)"/>
+      </g>
+    </svg>
+    <div class="hero-eyebrow">Voce esta convidado</div>
+    <h1>Halloween Party<span class="accent">Save the Date</span></h1>
+    <div class="hero-rule"><div class="diamond"></div></div>
+  </div>
+
+  <div class="party-date reveal">
+    <div class="label">Data da Festa</div>
+    <div class="date-val">03 de Outubro de 2026</div>
+  </div>
+
+  <div class="countdown-party reveal">
+    <div class="section-label">Faltam para a festa</div>
+    <div class="cd-grid">
+      <div class="cd-box"><span class="cd-num" id="p-days">--</span><span class="cd-unit">dias</span></div>
+      <div class="cd-box"><span class="cd-num" id="p-hours">--</span><span class="cd-unit">horas</span></div>
+      <div class="cd-box"><span class="cd-num" id="p-min">--</span><span class="cd-unit">min</span></div>
+      <div class="cd-box"><span class="cd-num" id="p-sec">--</span><span class="cd-unit">seg</span></div>
+    </div>
+  </div>
+
+  <div id="content" class="reveal">
+    <div class="status-msg">
+      <div class="spinner"></div><br>
+      Carregando informacoes do lote...
+    </div>
+  </div>
+
+  <!-- FORMULARIO -->
+  <div class="form-card reveal" id="form-card" style="display:none;">
+    <h2>Garanta seu ingresso</h2>
+    <p class="form-sub">Preencha seus dados para gerar seu pedido</p>
+
+    <div class="field" id="field-nome">
+      <label for="nome">Nome completo</label>
+      <input type="text" id="nome" placeholder="Digite seu nome e sobrenome" autocomplete="name">
+      <div class="field-error">Por favor, digite seu nome completo.</div>
+    </div>
+
+    <div class="breakdown" id="breakdown">
+      <div class="bd-row"><span id="bd-lote-label">Ingresso</span><span id="bd-lote-preco">--</span></div>
+      <div class="bd-row"><span>Taxa de servico</span><span>R$ 1,50</span></div>
+      <div class="bd-divider"></div>
+      <div class="bd-row bd-total"><span>Total</span><span id="bd-total">--</span></div>
+      <div class="bd-note">As instrucoes de pagamento serao enviadas no WhatsApp apos a confirmacao.</div>
+    </div>
+
+    <label class="terms-box">
+      <input type="checkbox" id="terms-check">
+      <span class="terms-text">Li e aceito os <a id="open-terms">termos de compra e politica de reembolso</a> do evento.</span>
+    </label>
+
+    <button class="btn-buy" id="btn-comprar" disabled>
+      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+      </svg>
+      Finalizar no WhatsApp
+    </button>
+  </div>
+
+  <a class="support-bar reveal" id="btn-suporte" target="_blank" rel="noopener">
+    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+    Falar com o suporte
+  </a>
+
+  <footer class="reveal">Halloween Party &middot; 2026</footer>
+
+</div>
+
+<!-- MODAL TERMOS -->
+<div class="modal-overlay" id="terms-modal">
+  <div class="modal-box">
+    <h3>Termos de compra</h3>
+    <p><strong>1. Confirmacao do pedido.</strong> Ao clicar em "Finalizar no WhatsApp", seus dados sao enviados para o organizador do evento, que confirmara a disponibilidade do lote e enviara as instrucoes de pagamento.</p>
+    <p><strong>2. Pagamento.</strong> O ingresso so e considerado garantido apos a confirmacao do pagamento pelo organizador.</p>
+    <p><strong>3. Taxa de servico.</strong> E cobrada uma taxa de R$ 1,50 por ingresso, referente ao processamento do pedido.</p>
+    <p><strong>4. Lotes.</strong> Os valores mudam automaticamente conforme o lote vigente. O preco valido e sempre o exibido no momento da confirmacao do pagamento, nao o momento do preenchimento do formulario.</p>
+    <p><strong>5. Reembolso.</strong> Ingressos nao sao reembolsaveis, exceto em caso de cancelamento do evento pelo organizador.</p>
+    <p><strong>6. Uso de imagem.</strong> Ao participar do evento, o convidado autoriza o uso de imagens registradas durante a festa para divulgacao em redes sociais.</p>
+    <button class="modal-close" id="close-terms">Entendi</button>
+  </div>
+</div>
+
+<div class="warning-overlay" id="warning-overlay">
+  <div class="warning-box">
+    <span class="warning-icon">&#127903;</span>
+    <h3>Ingresso pessoal e intransferivel</h3>
+    <p>Apenas <strong id="warning-nome">esta pessoa</strong> podera entrar na festa com este ingresso. Confira se o nome esta correto.</p>
+    <div class="warning-bar"><div class="warning-bar-fill" id="warning-bar-fill"></div></div>
+    <div class="warning-actions">
+      <button class="warning-cancel" id="warning-cancel">Cancelar</button>
+      <button class="warning-continue" id="warning-continue" disabled>Continuar (5)</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// CONFIG
+const WHATSAPP = '5519995002222';
+const PARTY_DATE = new Date('2026-10-03T22:00:00');
+const RAW_URL = 'https://raw.githubusercontent.com/Rogihh/festa/refs/heads/main/lote';
+const TAXA = 1.50;
+
+const LOTES = {
+  1: { nome: 'Lote 1', preco: 24 },
+  2: { nome: 'Lote 2', preco: 32 },
+  3: { nome: 'Lote 3', preco: 38 },
+  4: { nome: 'Entrada', preco: 40, soldOut: true },
+};
+
+let currentLote = null;
+
+// PARTICLES
+const EMOJIS = ['\uD83C\uDF83','\uD83D\uDC7B','\uD83D\uDD77\uFE0F','\uD83E\uDD87','\uD83D\uDC80','\uD83D\uDD78\uFE0F'];
+const pc = document.getElementById('particles');
+for (let i = 0; i < 10; i++) {
+  const el = document.createElement('div');
+  el.className = 'particle';
+  el.textContent = EMOJIS[Math.floor(Math.random() * EMOJIS.length)];
+  el.style.left = Math.random() * 100 + '%';
+  el.style.animationDuration = (9 + Math.random() * 14) + 's';
+  el.style.animationDelay = (Math.random() * 12) + 's';
+  el.style.fontSize = (1 + Math.random() * 1.1) + 'rem';
+  pc.appendChild(el);
+}
+
+// SCROLL REVEAL
+const revealEls = document.querySelectorAll('.reveal');
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      e.target.classList.add('visible');
+      observer.unobserve(e.target);
+    }
+  });
+}, { threshold: 0.1 });
+revealEls.forEach(el => observer.observe(el));
+
+// COUNTDOWN
+function updatePartyCountdown() {
+  const diff = PARTY_DATE - new Date();
+  if (diff <= 0) {
+    ['p-days','p-hours','p-min','p-sec'].forEach(id => document.getElementById(id).textContent = '00');
+    return;
+  }
+  const d = Math.floor(diff / 86400000);
+  const h = Math.floor((diff % 86400000) / 3600000);
+  const m = Math.floor((diff % 3600000) / 60000);
+  const s = Math.floor((diff % 60000) / 1000);
+  document.getElementById('p-days').textContent  = String(d).padStart(2,'0');
+  document.getElementById('p-hours').textContent = String(h).padStart(2,'0');
+  document.getElementById('p-min').textContent   = String(m).padStart(2,'0');
+  const secEl = document.getElementById('p-sec');
+  secEl.textContent = String(s).padStart(2,'0');
+  secEl.classList.remove('tick');
+  void secEl.offsetWidth;
+  secEl.classList.add('tick');
+
+  // pisca o box quando falta pouco
+  if (d === 0 && h < 1) {
+    document.querySelectorAll('.cd-box').forEach(b => b.classList.add('pulse-red'));
+  }
+}
+updatePartyCountdown();
+setInterval(updatePartyCountdown, 1000);
+
+// RENDER CARD
+function renderCard(lote) {
+  const isSoldOutNow = lote === 4;
+  if (isSoldOutNow) {
+    document.getElementById('content').innerHTML = `
+      <div class="sold-out-banner">
+        <span class="so-icon">\uD83D\uDD6F\uFE0F</span>
+        <h3>Ingressos esgotados</h3>
+        <p>Os lotes online chegaram ao fim. Fique de olho no WhatsApp para novidades de ultima hora.</p>
+      </div>
+    `;
+    document.getElementById('form-card').style.display = 'none';
+    return;
+  }
+  document.getElementById('content').innerHTML = '';
+  document.getElementById('form-card').style.display = 'block';
+  const info = LOTES[lote];
+  if (info) {
+    const preco = info.preco;
+    const total = preco + TAXA;
+    document.getElementById('bd-lote-label').textContent = 'Ingresso \u00B7 ' + info.nome;
+    document.getElementById('bd-lote-preco').textContent = formatBRL(preco);
+    document.getElementById('bd-total').textContent = formatBRL(total);
+  }
+}
+
+function formatBRL(value) {
+  return value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+}
+
+// FETCH LOTE
+async function fetchLote() {
+  try {
+    const res = await fetch(RAW_URL + '?nocache=' + Date.now());
+    if (!res.ok) throw new Error('Erro HTTP ' + res.status);
+    const text = (await res.text()).trim();
+    const num = parseInt(text);
+    if (isNaN(num) || num < 1 || num > 4) throw new Error('Valor invalido');
+    currentLote = num;
+    renderCard(num);
+  } catch (e) {
+    document.getElementById('content').innerHTML = `
+      <div class="status-msg">
+        &#9888;&#65039; Nao foi possivel carregar as informacoes no momento.<br>
+        <small style="font-size:0.72rem;margin-top:8px;display:block;opacity:0.6">Tentando novamente em instantes...</small>
+      </div>`;
+    document.getElementById('form-card').style.display = 'none';
+  }
+}
+fetchLote();
+setInterval(fetchLote, 30000);
+
+// TOAST
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2800);
+}
+
+// FORM VALIDATION
+const nomeInput = document.getElementById('nome');
+const termsCheck = document.getElementById('terms-check');
+const btnComprar = document.getElementById('btn-comprar');
+const fieldNome = document.getElementById('field-nome');
+
+function validateForm() {
+  const nomeOk = nomeInput.value.trim().split(' ').filter(Boolean).length >= 2;
+  btnComprar.disabled = !(nomeOk && termsCheck.checked);
+  return nomeOk;
+}
+nomeInput.addEventListener('input', () => { fieldNome.classList.remove('invalid'); validateForm(); });
+termsCheck.addEventListener('change', validateForm);
+
+// MODAL TERMOS
+const modal = document.getElementById('terms-modal');
+document.getElementById('open-terms').addEventListener('click', (e) => { e.preventDefault(); modal.classList.add('open'); });
+document.getElementById('close-terms').addEventListener('click', () => modal.classList.remove('open'));
+modal.addEventListener('click', (e) => { if (e.target === modal) modal.classList.remove('open'); });
+
+// SUPORTE
+document.getElementById('btn-suporte').href =
+  'https://wa.me/' + WHATSAPP + '?text=' + encodeURIComponent('Ola! Preciso de Suporte!');
+
+// SUBMIT — mensagem 100% encoded, sem emoji raw na URL
+btnComprar.addEventListener('click', () => {
+  const nomeOk = validateForm();
+  if (!nomeOk) {
+    fieldNome.classList.remove('invalid');
+    void fieldNome.offsetWidth;
+    fieldNome.classList.add('invalid');
+    showToast('Digite seu nome completo para continuar.');
+    return;
+  }
+  if (!termsCheck.checked) { showToast('Voce precisa aceitar os termos para continuar.'); return; }
+  if (!currentLote) { showToast('Aguarde o carregamento das informacoes.'); return; }
+
+  const nome = nomeInput.value.trim();
+const msgText =
+  `Olá!\n\n` +
+  `*Nome:* ${nome}\n\n` +
+  `*Quero comprar meu ingresso para a Halloween Party!*`;
+
+const url = `https://wa.me/SEUNUMERO?text=${encodeURIComponent(msgText)}`;
+
+  const waUrl = 'https://wa.me/' + WHATSAPP + '?text=' + encodeURIComponent(msgText);
+  showPersonalWarning(nome, waUrl);
+});
+
+// WARNING OVERLAY
+const warningOverlay = document.getElementById('warning-overlay');
+const warningBarFill = document.getElementById('warning-bar-fill');
+const warningNome = document.getElementById('warning-nome');
+const warningContinue = document.getElementById('warning-continue');
+let warningTimer = null;
+let pendingUrl = null;
+
+function showPersonalWarning(nome, redirectUrl) {
+  warningNome.textContent = nome;
+  pendingUrl = redirectUrl;
+  warningBarFill.classList.remove('run');
+  void warningBarFill.offsetWidth;
+  warningOverlay.classList.add('open');
+  requestAnimationFrame(() => warningBarFill.classList.add('run'));
+
+  let secondsLeft = 5;
+  warningContinue.disabled = true;
+  warningContinue.textContent = 'Continuar (' + secondsLeft + ')';
+  clearInterval(warningTimer);
+  warningTimer = setInterval(() => {
+    secondsLeft--;
+    if (secondsLeft <= 0) {
+      clearInterval(warningTimer);
+      warningContinue.disabled = false;
+      warningContinue.textContent = 'Continuar';
+    } else {
+      warningContinue.textContent = 'Continuar (' + secondsLeft + ')';
+    }
+  }, 1000);
+}
+
+warningContinue.addEventListener('click', () => {
+  if (warningContinue.disabled || !pendingUrl) return;
+  warningOverlay.classList.remove('open');
+  window.open(pendingUrl, '_blank');
+  pendingUrl = null;
+});
+
+document.getElementById('warning-cancel').addEventListener('click', () => {
+  clearInterval(warningTimer);
+  warningOverlay.classList.remove('open');
+  pendingUrl = null;
+  warningContinue.disabled = true;
+  warningContinue.textContent = 'Continuar (5)';
+});
+</script>
+</body>
+</html>
