@@ -61,6 +61,20 @@
   .conn-dot.off{background:var(--blood-bright);box-shadow:0 0 6px var(--blood-bright);animation:blink 1s infinite;}
   @keyframes blink{50%{opacity:.3;}}
 
+  /* --- indicador de backup automático --- */
+  .backup-indicator{
+    font-size:.62rem;color:var(--text-dim);letter-spacing:.5px;
+    display:flex;align-items:center;gap:4px;
+    cursor:default;
+  }
+  .backup-indicator .bi-dot{
+    width:6px;height:6px;border-radius:50%;background:var(--text-dim);flex-shrink:0;
+    transition:background .4s;
+  }
+  .backup-indicator.saving .bi-dot{background:var(--ember);animation:blink .6s infinite;}
+  .backup-indicator.saved .bi-dot{background:var(--toxic);}
+  .backup-indicator.error .bi-dot{background:var(--blood-bright);}
+
   .counters{display:flex;gap:10px;margin:14px 0;}
   .counter{
     flex:1;background:var(--bg-elevated);border:1px solid var(--border);border-radius:12px;
@@ -202,7 +216,7 @@
   }
   .import-preview{font-size:.78rem;color:var(--text-dim);margin-top:8px;}
 
-  /* ---------- loading overlay (bloqueia tudo até confirmar no servidor) ---------- */
+  /* ---------- loading overlay ---------- */
   .loading-overlay{
     display:none;position:fixed;inset:0;z-index:200;
     background:rgba(8,4,10,.82);backdrop-filter:blur(3px);
@@ -233,8 +247,6 @@
   .toast.warn{border-left-color:var(--ember);}
   .toast.error{border-left-color:var(--blood-bright);}
   @keyframes toastIn{from{opacity:0;transform:translateY(-10px);}to{opacity:1;transform:translateY(0);}}
-
-  datalist{}
 
   /* ---------- PIN DE ENTRADA ---------- */
   #startup-pin-gate{
@@ -296,8 +308,14 @@
         <span class="conn-dot" id="conn-dot"></span>
         <div>
           <h1>HELLHOUSE</h1>
-          <div class="date">CONTROLE DE ENTRADA · 03/10</div>
+          <!-- FIX: data dinâmica em vez de hardcoded -->
+          <div class="date" id="topbar-date">CONTROLE DE ENTRADA</div>
         </div>
+      </div>
+      <!-- FIX: indicador de backup automático visível -->
+      <div class="backup-indicator" id="backup-indicator" title="Status do backup automático">
+        <span class="bi-dot"></span>
+        <span id="backup-indicator-label">–</span>
       </div>
     </div>
 
@@ -349,24 +367,26 @@
   const input = document.getElementById("startup-pin");
   const error = document.getElementById("startup-pin-error");
 
+  // FIX: data dinâmica no topbar
+  const now = new Date();
+  const dateStr = now.toLocaleDateString("pt-BR", {day:"2-digit", month:"2-digit"});
+  const el = document.getElementById("topbar-date");
+  if(el) el.textContent = "CONTROLE DE ENTRADA · " + dateStr;
+
   setTimeout(() => input?.focus(), 50);
 
   form.addEventListener("submit", (e) => {
     e.preventDefault();
-
     if(input.value.trim() !== STARTUP_PIN){
       error.textContent = "PIN incorreto.";
       input.value = "";
       input.focus();
       return;
     }
-
     error.textContent = "";
     gate.remove();
     appScreen.style.display = "flex";
     document.body.classList.remove("pin-locked");
-
-    // Libera o início do Firebase somente depois do PIN.
     window.dispatchEvent(new Event("hellhouse-pin-ok"));
   });
 })();
@@ -393,6 +413,9 @@ const firebaseConfig = {
   measurementId: "G-42H9QJ1469"
 };
 
+// Intervalo do backup automático periódico (5 minutos)
+const AUTO_BACKUP_INTERVAL_MS = 5 * 60 * 1000;
+
 /* ===================== INIT ===================== */
 let app = null;
 let auth = null;
@@ -407,20 +430,20 @@ function initFirebase(){
   peopleRef = ref(db, "people");
 }
 
-// Sem tela de login: conecta de forma anônima em segundo plano assim que a
-// página carrega. Isso ainda satisfaz regras do Realtime Database que exigem
-// "auth != null" (plano Spark), mas ninguém precisa digitar e-mail/senha.
-// Com isso, também não há mais distinção de "admin": a aba Admin fica
-// sempre visível para qualquer pessoa que abrir a página.
 let authReady = false;
-
-// Mostra a tela de carregamento já no início e só libera o app quando o
-// login anônimo E os dados já tiverem chegado — evita que alguém consiga
-// clicar em algo antes da conexão estar pronta (o que antes podia falhar
-// silenciosamente com erro de permissão).
+let loaded = false;
 let bootStarted = false;
 let bootTimeout = null;
-let maybeHideBootLoading = null;
+
+// FIX CRÍTICO: maybeHideBootLoading declarada no escopo do módulo ANTES de
+// ser referenciada por qualquer listener. Antes ela era atribuída dentro de
+// startFirebaseBoot() e poderia ainda ser null quando os listeners disparavam.
+function maybeHideBootLoading(){
+  if(authReady && loaded){
+    if(bootTimeout){ clearTimeout(bootTimeout); bootTimeout = null; }
+    hideLoading();
+  }
+}
 
 function startFirebaseBoot(){
   if(bootStarted) return;
@@ -434,17 +457,7 @@ function startFirebaseBoot(){
     }
   }, 8000);
 
-  maybeHideBootLoading = function(){
-
-  if(authReady && loaded){
-    if(bootTimeout){ clearTimeout(bootTimeout); bootTimeout = null; }
-    hideLoading();
-  }
-}
-// Guarda a sessão anônima no navegador antes de logar, pra reaproveitar o
-// signInAnonymously e não criar uma conta nova a cada refresh — a sessão
-// fica salva no navegador (localStorage) e é reaproveitada nos acessos seguintes.
-registerAuthListener();
+  registerAuthListener();
   registerPeopleListener();
   registerConnectionListener();
 
@@ -457,15 +470,19 @@ registerAuthListener();
         showToast("Erro ao conectar: " + (err?.message || "falha de autenticação"), "error");
       });
     });
+
+  // FIX: backup automático periódico — salva local + nuvem a cada 5 minutos
+  // independentemente de mudanças nos dados.
+  setInterval(()=>{
+    if(!loaded || Object.keys(people).length === 0) return;
+    runAutoBackup();
+  }, AUTO_BACKUP_INTERVAL_MS);
 }
 
 window.addEventListener("hellhouse-pin-ok", startFirebaseBoot, {once:true});
 
 /* ===================== BACKUP ===================== */
-// O backup local fica salvo automaticamente neste celular/navegador.
-// Também existe uma cópia no Firebase em /backup_latest.
-// IMPORTANTE: o backup local é a proteção contra uma perda total do Firebase.
-const LOCAL_BACKUP_KEY = "hellhouse_backup_v1";
+const LOCAL_BACKUP_KEY      = "hellhouse_backup_v1";
 const LOCAL_BACKUP_META_KEY = "hellhouse_backup_meta_v1";
 
 function makeBackupPayload(data = people){
@@ -475,6 +492,35 @@ function makeBackupPayload(data = people){
     savedAt: Date.now(),
     people: data || {}
   };
+}
+
+// FIX: função centralizada chamada pelo timer periódico e pelo listener do Firebase.
+// Atualiza o indicador visual de backup no topo da tela.
+async function runAutoBackup(data = people, silent = true){
+  setBackupIndicator("saving", "salvando...");
+  const localOk = saveLocalBackup(data, silent);
+  const cloudOk = await saveCloudBackup(data);
+
+  if(localOk){
+    const ts = new Date().toLocaleTimeString("pt-BR", {hour:"2-digit", minute:"2-digit"});
+    setBackupIndicator("saved", ts);
+  } else {
+    setBackupIndicator("error", "falhou");
+    if(!silent) showToast("Backup local falhou.", "error");
+  }
+
+  // FIX: avisa se o backup na nuvem falhou (antes era silencioso)
+  if(!cloudOk && !silent){
+    showToast("Backup na nuvem não foi possível. Backup local salvo.", "warn");
+  }
+}
+
+function setBackupIndicator(state, label){
+  const el    = document.getElementById("backup-indicator");
+  const lblEl = document.getElementById("backup-indicator-label");
+  if(!el || !lblEl) return;
+  el.className = "backup-indicator " + state;
+  lblEl.textContent = label;
 }
 
 function saveLocalBackup(data = people, silent = true){
@@ -503,9 +549,6 @@ function getLocalBackup(){
 }
 
 async function saveCloudBackup(data = people){
-  // Guarda uma cópia separada dentro do próprio Firebase.
-  // Não substitui o backup do celular: se o banco inteiro for apagado,
-  // esta cópia também poderá ser perdida.
   if(!authReady) return false;
   try{
     await set(ref(db, "backup_latest"), makeBackupPayload(data));
@@ -531,8 +574,8 @@ function downloadBackup(){
   a.click();
   a.remove();
   URL.revokeObjectURL(url);
-  saveLocalBackup(people);
-  showToast("Backup salvo no celular.", "ok");
+  runAutoBackup(people, false);
+  showToast("Backup salvo.", "ok");
 }
 
 function openBackupModal(){
@@ -542,18 +585,18 @@ function openBackupModal(){
     <button class="modal-close" type="button" onclick="window.__closeModal()">✕</button>
     <h2>Backup da lista</h2>
     <p class="hint" style="margin-bottom:14px;">
-      A lista já é salva automaticamente neste celular. Para ter uma cópia que pode ser guardada em outro lugar, toque em <strong>Salvar backup no celular</strong>.
+      A lista é salva <strong>automaticamente</strong> neste celular a cada 5 minutos e sempre que há mudanças nos dados. Para ter uma cópia fora do celular, toque em <strong>Baixar backup</strong>.
     </p>
     <div style="display:flex;flex-direction:column;gap:10px;">
-      <button type="button" class="btn btn-blood btn-block" id="btn-save-backup">💾 Salvar backup no celular</button>
+      <button type="button" class="btn btn-blood btn-block" id="btn-save-backup">💾 Baixar backup agora</button>
       <button type="button" class="btn btn-ghost btn-block" id="btn-restore-local">↩ Restaurar último backup deste celular</button>
       <button type="button" class="btn btn-ghost btn-block" id="btn-choose-backup">📂 Restaurar arquivo de backup</button>
     </div>
     <p class="import-preview" style="margin-top:14px;">
-      Backup automático neste aparelho: ${local ? `sim · ${localCount} pessoa(s) · ${formatBackupDate(local.savedAt)}` : "ainda não criado"}
+      Backup automático neste aparelho: ${local ? `${localCount} pessoa(s) · salvo em ${formatBackupDate(local.savedAt)}` : "ainda não criado"}
     </p>
     <p class="import-preview">
-      Dica: antes da festa, salve o arquivo de backup e mande para seu WhatsApp/Google Drive. Assim você terá uma cópia fora do celular.
+      Dica: antes da festa, baixe o arquivo de backup e mande para seu WhatsApp/Google Drive.
     </p>
   `);
 
@@ -588,8 +631,7 @@ async function restoreBackupPayload(payload){
   }
 
   const ok = confirm(
-    `Restaurar ${count} pessoa(s) deste backup?\n\n` +
-    `Isso vai substituir a lista atual no Firebase.`
+    `Restaurar ${count} pessoa(s) deste backup?\n\nIsso vai substituir a lista atual no Firebase.`
   );
   if(!ok) return;
 
@@ -600,14 +642,14 @@ async function restoreBackupPayload(payload){
 
   showLoading("Restaurando backup...");
   try{
-    // Substitui somente o nó people. O backup em si não é apagado.
     await set(peopleRef, backupPeople);
     const check = await get(peopleRef);
     if(!check.exists()){
       showToast("Não consegui confirmar a restauração.", "error");
       return;
     }
-    saveLocalBackup(backupPeople);
+    // FIX: após restaurar, salva o backup local e atualiza o indicador
+    await runAutoBackup(backupPeople, true);
     showToast(`Backup restaurado: ${count} pessoa(s).`, "ok");
   }catch(err){
     showToast("Erro ao restaurar: " + err.message, "error");
@@ -635,8 +677,7 @@ document.getElementById("backup-file-input").addEventListener("change", async (e
 /* ===================== STATE ===================== */
 let currentUser = null;
 let people = {};
-let loaded = false;
-let currentTab = "pending"; // pending | entered | admin
+let currentTab = "pending";
 let searchTerm = "";
 const processing = new Set();
 
@@ -654,11 +695,7 @@ function escapeHtml(str){
     "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
   }[c]));
 }
-function isAdmin(){
-  // Sem login não há como distinguir usuários, então a área admin fica
-  // liberada para qualquer pessoa que tenha o link.
-  return true;
-}
+function isAdmin(){ return true; }
 function fmtTime(ms){
   if(!ms) return "";
   return new Date(ms).toLocaleTimeString("pt-BR", {hour:"2-digit", minute:"2-digit"});
@@ -686,13 +723,9 @@ function showLoading(msg){
 }
 function hideLoading(){
   document.getElementById("loading-overlay").classList.remove("open");
-  // some qualquer estado de "travado" que tenha ficado ligado
   document.getElementById("loading-retry-btn").style.display = "none";
   document.getElementById("loading-spinner").style.display = "";
 }
-// Usado só na tela de boot (antes do app liberar o uso): se conectar ou
-// carregar os dados falhar/demorar demais, mostra um botão pra recarregar
-// em vez de deixar a tela de carregamento girando pra sempre sem saída.
 function showStuck(msg){
   document.getElementById("loading-msg").textContent = msg;
   document.getElementById("loading-spinner").style.display = "none";
@@ -708,13 +741,15 @@ function openModal(html){
 function closeModal(){
   document.getElementById("modal-overlay").classList.remove("open");
   document.getElementById("modal-body").innerHTML = "";
+  // FIX: reseta importInFlight se o modal for fechado externamente
+  importInFlight = false;
 }
 document.getElementById("modal-overlay").addEventListener("click", (e)=>{
   if(e.target.id === "modal-overlay") closeModal();
 });
 
-/* ===================== AUTH (anônimo, sem tela de login) ===================== */
-function registerAuthListener(){ onAuthStateChanged(auth, (user)=>{
+/* ===================== AUTH ===================== */
+function registerAuthListener(){ onValue(ref(db, ".info/connected"), ()=>{}); onAuthStateChanged(auth, (user)=>{
   currentUser = user;
   authReady = !!user;
   maybeHideBootLoading();
@@ -724,18 +759,17 @@ function registerAuthListener(){ onAuthStateChanged(auth, (user)=>{
 
 /* ===================== REALTIME DATA ===================== */
 let cloudBackupTimer = null;
+
 function registerPeopleListener(){ onValue(peopleRef, (snapshot)=>{
   people = snapshot.val() || {};
   loaded = true;
 
-  // Proteção contra perda: mantém a última lista conhecida neste aparelho.
-  // Se o Firebase voltar vazio, não sobrescrevemos o backup local.
   if(Object.keys(people).length > 0){
-    saveLocalBackup(people);
+    // FIX: dispara o backup automático completo (local + nuvem) quando os dados mudam,
+    // com debounce de 500ms pra não bater várias vezes em sequência rápida.
     clearTimeout(cloudBackupTimer);
-    cloudBackupTimer = setTimeout(()=>saveCloudBackup(people), 500);
-  }else if(getLocalBackup()){
-    // Não restaura sozinho: apenas avisa para evitar uma restauração errada.
+    cloudBackupTimer = setTimeout(()=> runAutoBackup(people, true), 500);
+  } else if(getLocalBackup()){
     showToast("⚠️ O banco está vazio. Há um backup salvo neste celular.", "warn");
   }
 
@@ -743,8 +777,6 @@ function registerPeopleListener(){ onValue(peopleRef, (snapshot)=>{
   render();
 }, (err)=>{
   showToast("Erro ao carregar dados: " + err.message, "error");
-  // Se a lista nunca tiver carregado (ex: permissão negada no banco), não
-  // deixa a tela de carregamento girando pra sempre sem explicação.
   if(!loaded){
     if(bootTimeout){ clearTimeout(bootTimeout); bootTimeout = null; }
     showStuck("Não foi possível carregar a lista. Toque em recarregar ou avise o suporte.");
@@ -784,7 +816,7 @@ function getFilteredEntries(){
   let filtered = entries.filter(([id, p]) => {
     if(currentTab === "pending") return !p.entered;
     if(currentTab === "entered") return !!p.entered;
-    return true; // admin
+    return true;
   });
   if(searchTerm){
     filtered = filtered.filter(([id, p]) => (p.normalizedName || normalize(p.name)).includes(searchTerm));
@@ -894,7 +926,6 @@ function buildCard(id, p){
     </div>`;
 }
 
-// delegação de eventos (um único listener para toda a lista)
 document.getElementById("list").addEventListener("click", (e)=>{
   const btn = e.target.closest("[data-action]");
   if(!btn) return;
@@ -908,10 +939,6 @@ document.getElementById("list").addEventListener("click", (e)=>{
 });
 
 /* ===================== AÇÕES DE ENTRADA ===================== */
-// Marca a entrada e SÓ libera a tela quando o próprio servidor confirmar
-// que gravou. Enquanto isso, uma tela de carregamento cobre o app inteiro
-// pra ninguém clicar em outra pessoa por engano e pra nunca dar a entrada
-// como feita sem ter certeza (mesmo que a internet do local esteja ruim).
 async function markEntered(id){
   if(processing.has(id)) return;
   if(!authReady){
@@ -925,8 +952,8 @@ async function markEntered(id){
   let stamped = false;
   try{
     const result = await runTransaction(ref(db, `people/${id}`), (current)=>{
-      if(!current) return;                 // pessoa não existe mais -> aborta (undefined = abort)
-      if(current.entered) return;          // já tinha entrado -> aborta (undefined = abort)
+      if(!current) return;
+      if(current.entered) return;
       current.entered = true;
       current.enteredAt = Date.now();
       current.enteredBy = currentUser?.uid || "desconhecido";
@@ -942,8 +969,6 @@ async function markEntered(id){
       return;
     }
 
-    // Confirmação extra: relê direto do banco pra ter 100% de certeza
-    // que ficou salvo antes de sumir com o carregamento.
     showLoading("Verificando no servidor...");
     const check = await get(ref(db, `people/${id}/entered`));
     if(check.val() !== true){
@@ -982,9 +1007,6 @@ async function markPending(id){
   showLoading(`Desfazendo entrada${person?.name ? " de " + person.name : ""}...`);
   render();
   try{
-    // Confere se o registro ainda existe antes de escrever — sem isso, um
-    // update() em um caminho apagado por outro aparelho recriaria um
-    // registro "fantasma" só com os campos de entrada, sem nome/ingresso.
     const existing = await get(ref(db, `people/${id}`));
     if(!existing.exists()){
       showToast("Esse cadastro não existe mais.", "error");
@@ -1092,9 +1114,6 @@ async function addPerson(name, ticket){
 /* ===================== IMPORTAÇÃO EM MASSA ===================== */
 document.getElementById("btn-open-import").addEventListener("click", ()=> openImportModal());
 
-// Analisa o texto colado: separa quem entra de fato, quem é repetido
-// (já cadastrado ou repetido dentro da própria lista colada) e linhas
-// estranhas (sem nenhuma letra, ou nome curto demais pra ser um nome).
 function analyzeImport(rawText){
   const lines = rawText.split(/\r?\n/).map(l=>l.trim()).filter(Boolean);
   const existingNormalized = new Set(Object.values(people).map(p => p.normalizedName || normalize(p.name)));
@@ -1144,7 +1163,7 @@ function openImportModal(){
   openModal(`
     <button class="modal-close" type="button" onclick="window.__closeModal()">✕</button>
     <h2>Colar lista de nomes</h2>
-    <p class="hint" style="margin-bottom:10px;">Um nome por linha. Opcional: "Nome, Ingresso" (vírgula ou ponto e vírgula separam o ingresso). Nomes repetidos ou linhas estranhas são ignorados automaticamente.</p>
+    <p class="hint" style="margin-bottom:10px;">Um nome por linha. Opcional: "Nome, Ingresso". Repetidos e linhas estranhas são ignorados.</p>
     <textarea class="field-textarea" id="import-text" placeholder="Maria Silva, VIP&#10;João Souza&#10;Ana Costa, Pista"></textarea>
     <div class="import-preview" id="import-preview"></div>
     <div class="modal-actions">
@@ -1166,17 +1185,15 @@ function openImportModal(){
   });
 }
 
+// FIX: importInFlight declarado no escopo do módulo pra ser acessível no closeModal()
 let importInFlight = false;
+
 async function bulkImport(rawText){
-  if(importInFlight) return; // trava contra clique duplo / duplo-toque no botão
+  if(importInFlight) return;
   if(!authReady){
     showToast("Ainda conectando... aguarde um instante e tente de novo.", "warn");
     return;
   }
-  // IMPORTANTE: usa exatamente a mesma análise que gera a prévia (analyzeImport),
-  // em vez de reprocessar o texto do zero. Antes disso, esta função ignorava
-  // a checagem de duplicados/linhas estranhas mostrada na prévia e importava
-  // TUDO, inclusive nomes repetidos e lixo — agora os dois ficam sempre iguais.
   const analysis = analyzeImport(rawText);
   if(!analysis.totalLines){ showToast("Cole ao menos um nome.", "error"); return; }
   if(analysis.toImport.length === 0){
@@ -1207,8 +1224,6 @@ async function bulkImport(rawText){
   try{
     await update(ref(db), updates);
 
-    // Confirmação extra: relê ao menos um dos registros gravados pra ter
-    // certeza de que a importação realmente foi salva no servidor.
     showLoading("Verificando no servidor...");
     const sampleId = Object.keys(updates)[0].split("/")[1];
     const check = await get(ref(db, `people/${sampleId}`));
@@ -1219,7 +1234,7 @@ async function bulkImport(rawText){
 
     let msg = `${analysis.toImport.length} pessoa(s) importada(s).`;
     const skipped = analysis.duplicatesExisting + analysis.duplicatesInPaste + analysis.weird;
-    if(skipped) msg += ` ${skipped} linha(s) ignorada(s) (repetida ou inválida).`;
+    if(skipped) msg += ` ${skipped} linha(s) ignorada(s).`;
     showToast(msg, "ok");
   }catch(err){
     showToast("Erro ao importar: " + err.message, "error");
@@ -1337,7 +1352,6 @@ function exportCSV(){
   URL.revokeObjectURL(url);
 }
 
-/* expõe fechar modal pro onclick inline */
 window.__closeModal = closeModal;
 </script>
 </body>
