@@ -45,44 +45,8 @@
   button{font-family:inherit;cursor:pointer;}
   input,textarea{font-family:inherit;}
 
-  /* ---------- LOGIN ---------- */
-  #login-screen{
-    min-height:100vh;display:flex;align-items:center;justify-content:center;
-    padding:24px;
-  }
-  .login-card{
-    width:100%;max-width:380px;background:var(--bg-elevated);
-    border:1px solid var(--border);border-radius:var(--radius);
-    padding:32px 28px;box-shadow:var(--shadow);
-  }
-  .login-logo{text-align:center;margin-bottom:6px;}
-  .login-logo h1{font-size:2.4rem;color:var(--blood-bright);text-shadow:0 0 18px rgba(200,29,63,.5);}
-  .login-sub{text-align:center;color:var(--text-dim);font-size:.82rem;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:28px;}
-  .field{margin-bottom:16px;}
-  .field label{display:block;font-size:.78rem;color:var(--text-dim);margin-bottom:6px;letter-spacing:.3px;}
-  .field input{
-    width:100%;padding:13px 14px;border-radius:10px;border:1px solid var(--border);
-    background:var(--bg-card);color:var(--text);font-size:1rem;
-  }
-  .field input:focus{border-color:var(--ember);}
-  .btn{
-    display:inline-flex;align-items:center;justify-content:center;gap:8px;
-    border:none;border-radius:10px;padding:13px 18px;font-size:.95rem;font-weight:700;
-    transition:transform .1s ease, filter .15s ease; user-select:none;
-  }
-  .btn:active{transform:scale(.97);}
-  .btn-blood{background:linear-gradient(180deg,var(--blood-bright),var(--blood));color:#fff;box-shadow:0 4px 14px rgba(200,29,63,.35);}
-  .btn-blood:hover{filter:brightness(1.08);}
-  .btn-block{width:100%;}
-  .btn-ghost{background:transparent;color:var(--text-dim);border:1px solid var(--border);}
-  .btn-ghost:hover{color:var(--text);border-color:var(--text-dim);}
-  .btn-toxic{background:linear-gradient(180deg,#4fef8a,var(--toxic));color:#08210f;}
-  .btn-sm{padding:9px 12px;font-size:.82rem;border-radius:8px;}
-  .btn:disabled{opacity:.5;pointer-events:none;}
-  #login-error{color:var(--blood-bright);font-size:.85rem;margin-top:4px;min-height:1.1em;}
-
   /* ---------- APP SHELL ---------- */
-  #app-screen{display:none;min-height:100vh;flex-direction:column;}
+  #app-screen{display:flex;min-height:100vh;flex-direction:column;}
   header.topbar{
     position:sticky;top:0;z-index:20;
     background:rgba(18,10,23,.92);backdrop-filter:blur(10px);
@@ -96,8 +60,6 @@
   .conn-dot{width:8px;height:8px;border-radius:50%;background:var(--toxic);box-shadow:0 0 6px var(--toxic);flex-shrink:0;}
   .conn-dot.off{background:var(--blood-bright);box-shadow:0 0 6px var(--blood-bright);animation:blink 1s infinite;}
   @keyframes blink{50%{opacity:.3;}}
-  .who{display:flex;align-items:center;gap:8px;font-size:.72rem;color:var(--text-dim);}
-  .who button{background:none;border:none;color:var(--text-dim);text-decoration:underline;font-size:.72rem;padding:4px;}
 
   .counters{display:flex;gap:10px;margin:14px 0;}
   .counter{
@@ -193,6 +155,21 @@
   }
   .fab.secondary{background:var(--bg-elevated);border:1px solid var(--border);box-shadow:var(--shadow);color:var(--text);}
 
+  .btn{
+    display:inline-flex;align-items:center;justify-content:center;gap:8px;
+    border:none;border-radius:10px;padding:13px 18px;font-size:.95rem;font-weight:700;
+    transition:transform .1s ease, filter .15s ease; user-select:none;
+  }
+  .btn:active{transform:scale(.97);}
+  .btn-blood{background:linear-gradient(180deg,var(--blood-bright),var(--blood));color:#fff;box-shadow:0 4px 14px rgba(200,29,63,.35);}
+  .btn-blood:hover{filter:brightness(1.08);}
+  .btn-block{width:100%;}
+  .btn-ghost{background:transparent;color:var(--text-dim);border:1px solid var(--border);}
+  .btn-ghost:hover{color:var(--text);border-color:var(--text-dim);}
+  .btn-toxic{background:linear-gradient(180deg,#4fef8a,var(--toxic));color:#08210f;}
+  .btn-sm{padding:9px 12px;font-size:.82rem;border-radius:8px;}
+  .btn:disabled{opacity:.5;pointer-events:none;}
+
   #modal-overlay{
     display:none;position:fixed;inset:0;background:rgba(8,4,10,.7);backdrop-filter:blur(2px);
     z-index:50;align-items:flex-end;justify-content:center;
@@ -212,11 +189,39 @@
   .modal-close{position:absolute;top:14px;right:16px;background:none;border:none;color:var(--text-dim);font-size:1.3rem;}
   .modal-actions{display:flex;gap:10px;margin-top:18px;}
   .modal-actions .btn{flex:1;}
+  .field{margin-bottom:16px;}
+  .field label{display:block;font-size:.78rem;color:var(--text-dim);margin-bottom:6px;letter-spacing:.3px;}
+  .field input{
+    width:100%;padding:13px 14px;border-radius:10px;border:1px solid var(--border);
+    background:var(--bg-card);color:var(--text);font-size:1rem;
+  }
+  .field input:focus{border-color:var(--ember);}
   textarea.field-textarea{
     width:100%;min-height:130px;padding:12px;border-radius:10px;border:1px solid var(--border);
     background:var(--bg-card);color:var(--text);font-size:.88rem;font-family:'Space Mono',monospace;resize:vertical;
   }
   .import-preview{font-size:.78rem;color:var(--text-dim);margin-top:8px;}
+
+  /* ---------- loading overlay (bloqueia tudo até confirmar no servidor) ---------- */
+  .loading-overlay{
+    display:none;position:fixed;inset:0;z-index:200;
+    background:rgba(8,4,10,.82);backdrop-filter:blur(3px);
+    align-items:center;justify-content:center;
+  }
+  .loading-overlay.open{display:flex;}
+  .loading-box{
+    display:flex;flex-direction:column;align-items:center;gap:14px;
+    padding:28px 34px;background:var(--bg-elevated);border:1px solid var(--border);
+    border-radius:16px;box-shadow:var(--shadow);
+  }
+  .spinner{
+    width:40px;height:40px;border-radius:50%;
+    border:4px solid var(--border);border-top-color:var(--blood-bright);
+    animation:spin .8s linear infinite;
+  }
+  @keyframes spin{to{transform:rotate(360deg);}}
+  .loading-msg{font-size:.85rem;color:var(--text-dim);text-align:center;max-width:220px;}
+  @media (prefers-reduced-motion: reduce){.spinner{animation:spin 1.6s linear infinite;}}
 
   /* ---------- toasts ---------- */
   #toast-wrap{position:fixed;top:14px;left:0;right:0;display:flex;flex-direction:column;align-items:center;gap:8px;z-index:100;pointer-events:none;}
@@ -234,26 +239,6 @@
 </head>
 <body>
 
-<!-- ===================== LOGIN ===================== -->
-<div id="login-screen">
-  <div class="login-card">
-    <div class="login-logo"><h1>HELLHOUSE</h1></div>
-    <div class="login-sub">Acesso da equipe · 03/10</div>
-    <form id="login-form">
-      <div class="field">
-        <label for="login-email">E-mail</label>
-        <input id="login-email" type="email" autocomplete="username" required placeholder="portaria1@hellhouse.local">
-      </div>
-      <div class="field">
-        <label for="login-password">Senha</label>
-        <input id="login-password" type="password" autocomplete="current-password" required placeholder="••••••••">
-      </div>
-      <div id="login-error"></div>
-      <button type="submit" class="btn btn-blood btn-block" id="login-btn">ENTRAR</button>
-    </form>
-  </div>
-</div>
-
 <!-- ===================== APP ===================== -->
 <div id="app-screen">
   <header class="topbar">
@@ -264,10 +249,6 @@
           <h1>HELLHOUSE</h1>
           <div class="date">CONTROLE DE ENTRADA · 03/10</div>
         </div>
-      </div>
-      <div class="who">
-        <span id="who-email"></span>
-        <button id="logout-btn" type="button">sair</button>
       </div>
     </div>
 
@@ -299,14 +280,20 @@
 <div id="modal-overlay"><div class="modal" id="modal-body"></div></div>
 <div id="toast-wrap"></div>
 
+<div class="loading-overlay" id="loading-overlay">
+  <div class="loading-box">
+    <div class="spinner"></div>
+    <div class="loading-msg" id="loading-msg">Confirmando...</div>
+  </div>
+</div>
+
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
 import {
-  getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut,
-  setPersistence, browserLocalPersistence
+  getAuth, onAuthStateChanged, signInAnonymously
 } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
 import {
-  getDatabase, ref, push, set, update, remove, onValue, runTransaction, serverTimestamp
+  getDatabase, ref, push, set, update, remove, onValue, get, runTransaction, serverTimestamp
 } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-database.js";
 
 /* ===================== CONFIG ===================== */
@@ -321,18 +308,21 @@ const firebaseConfig = {
   measurementId: "G-42H9QJ1469"
 };
 
-// Edite aqui para adicionar e-mails que devem ver a aba "Administração".
-// Isso é só uma conveniência de interface: no plano Spark, qualquer conta
-// autenticada tem o mesmo nível de acesso ao banco (ver README).
-const ADMIN_EMAILS = ["admin@hellhouse.local"];
-
 /* ===================== INIT ===================== */
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getDatabase(app);
-setPersistence(auth, browserLocalPersistence).catch(() => {});
 
 const peopleRef = ref(db, "people");
+
+// Sem tela de login: conecta de forma anônima em segundo plano assim que a
+// página carrega. Isso ainda satisfaz regras do Realtime Database que exigem
+// "auth != null" (plano Spark), mas ninguém precisa digitar e-mail/senha.
+// Com isso, também não há mais distinção de "admin": a aba Admin fica
+// sempre visível para qualquer pessoa que abrir a página.
+signInAnonymously(auth).catch((err) => {
+  showToast("Erro ao conectar: " + err.message, "error");
+});
 
 /* ===================== STATE ===================== */
 let currentUser = null;
@@ -357,7 +347,9 @@ function escapeHtml(str){
   }[c]));
 }
 function isAdmin(){
-  return !!currentUser && ADMIN_EMAILS.map(e=>e.toLowerCase()).includes((currentUser.email||"").toLowerCase());
+  // Sem login não há como distinguir usuários, então a área admin fica
+  // liberada para qualquer pessoa que tenha o link.
+  return true;
 }
 function fmtTime(ms){
   if(!ms) return "";
@@ -378,6 +370,13 @@ function showToast(msg, type="ok"){
   document.getElementById("toast-wrap").appendChild(el);
   setTimeout(()=>{ el.style.transition="opacity .3s"; el.style.opacity="0"; setTimeout(()=>el.remove(), 300); }, 2600);
 }
+function showLoading(msg){
+  document.getElementById("loading-msg").textContent = msg;
+  document.getElementById("loading-overlay").classList.add("open");
+}
+function hideLoading(){
+  document.getElementById("loading-overlay").classList.remove("open");
+}
 function openModal(html){
   document.getElementById("modal-body").innerHTML = html;
   document.getElementById("modal-overlay").classList.add("open");
@@ -390,47 +389,11 @@ document.getElementById("modal-overlay").addEventListener("click", (e)=>{
   if(e.target.id === "modal-overlay") closeModal();
 });
 
-/* ===================== AUTH ===================== */
-document.getElementById("login-form").addEventListener("submit", async (e)=>{
-  e.preventDefault();
-  const email = document.getElementById("login-email").value.trim();
-  const password = document.getElementById("login-password").value;
-  const btn = document.getElementById("login-btn");
-  const errBox = document.getElementById("login-error");
-  errBox.textContent = "";
-  btn.disabled = true; btn.textContent = "ENTRANDO...";
-  try{
-    await signInWithEmailAndPassword(auth, email, password);
-  }catch(err){
-    const map = {
-      "auth/invalid-credential": "E-mail ou senha incorretos.",
-      "auth/invalid-email": "E-mail inválido.",
-      "auth/user-not-found": "Essa conta não existe.",
-      "auth/wrong-password": "Senha incorreta.",
-      "auth/too-many-requests": "Muitas tentativas. Aguarde um pouco e tente de novo."
-    };
-    errBox.textContent = map[err.code] || ("Erro ao entrar: " + err.message);
-  }finally{
-    btn.disabled = false; btn.textContent = "ENTRAR";
-  }
-});
-
-document.getElementById("logout-btn").addEventListener("click", ()=> signOut(auth));
-
+/* ===================== AUTH (anônimo, sem tela de login) ===================== */
 onAuthStateChanged(auth, (user)=>{
   currentUser = user;
-  if(user){
-    document.getElementById("login-screen").style.display = "none";
-    document.getElementById("app-screen").style.display = "flex";
-    document.getElementById("who-email").textContent = user.email;
-    if(currentTab === "admin" && !isAdmin()) currentTab = "pending";
-    renderTabs();
-    render();
-  }else{
-    document.getElementById("app-screen").style.display = "none";
-    document.getElementById("login-screen").style.display = "flex";
-    loaded = false;
-  }
+  renderTabs();
+  render();
 });
 
 /* ===================== REALTIME DATA ===================== */
@@ -595,9 +558,15 @@ document.getElementById("list").addEventListener("click", (e)=>{
 });
 
 /* ===================== AÇÕES DE ENTRADA ===================== */
+// Marca a entrada e SÓ libera a tela quando o próprio servidor confirmar
+// que gravou. Enquanto isso, uma tela de carregamento cobre o app inteiro
+// pra ninguém clicar em outra pessoa por engano e pra nunca dar a entrada
+// como feita sem ter certeza (mesmo que a internet do local esteja ruim).
 async function markEntered(id){
   if(processing.has(id)) return;
   processing.add(id);
+  const person = people[id];
+  showLoading(`Marcando entrada${person?.name ? " de " + person.name : ""}...`);
   render();
   try{
     const result = await runTransaction(ref(db, `people/${id}`), (current)=>{
@@ -605,28 +574,41 @@ async function markEntered(id){
       if(current.entered) return;          // já tinha entrado -> aborta (undefined = abort)
       current.entered = true;
       current.enteredAt = Date.now();
-      current.enteredBy = currentUser?.email || "desconhecido";
+      current.enteredBy = currentUser?.uid || "desconhecido";
       return current;
     });
+
     if(!result.committed){
       showToast("Essa pessoa já foi liberada por outro aparelho.", "warn");
-    }else{
-      showToast(`${result.snapshot.val()?.name || "Pessoa"} liberado(a) para entrar.`, "ok");
-      processing.delete(id);
-      render();
-      requestAnimationFrame(()=>{
-        const card = document.querySelector(`.card[data-id="${id}"]`);
-        if(card){
-          card.classList.add("just-stamped");
-          setTimeout(()=>card.classList.remove("just-stamped"), 750);
-        }
-      });
       return;
     }
+
+    // Confirmação extra: relê direto do banco pra ter 100% de certeza
+    // que ficou salvo antes de sumir com o carregamento.
+    showLoading("Verificando no servidor...");
+    const check = await get(ref(db, `people/${id}/entered`));
+    if(check.val() !== true){
+      showToast("Não deu pra confirmar a entrada. Tente de novo.", "error");
+      return;
+    }
+
+    showToast(`${result.snapshot.val()?.name || "Pessoa"} liberado(a) para entrar.`, "ok");
+    hideLoading();
+    processing.delete(id);
+    render();
+    requestAnimationFrame(()=>{
+      const card = document.querySelector(`.card[data-id="${id}"]`);
+      if(card){
+        card.classList.add("just-stamped");
+        setTimeout(()=>card.classList.remove("just-stamped"), 750);
+      }
+    });
+    return;
   }catch(err){
     showToast("Erro ao marcar entrada: " + err.message, "error");
   }finally{
     processing.delete(id);
+    hideLoading();
     render();
   }
 }
@@ -634,14 +616,24 @@ async function markEntered(id){
 async function markPending(id){
   if(processing.has(id)) return;
   processing.add(id);
+  const person = people[id];
+  showLoading(`Desfazendo entrada${person?.name ? " de " + person.name : ""}...`);
   render();
   try{
     await update(ref(db, `people/${id}`), { entered:false, enteredAt:null, enteredBy:null });
-    showToast("Entrada desfeita.", "ok");
+
+    showLoading("Verificando no servidor...");
+    const check = await get(ref(db, `people/${id}/entered`));
+    if(check.val() !== false){
+      showToast("Não deu pra confirmar. Tente de novo.", "error");
+    }else{
+      showToast("Entrada desfeita.", "ok");
+    }
   }catch(err){
     showToast("Erro ao desfazer: " + err.message, "error");
   }finally{
     processing.delete(id);
+    hideLoading();
     render();
   }
 }
@@ -689,19 +681,34 @@ function openAddModal(){
 }
 
 async function addPerson(name, ticket){
-  const dupe = Object.values(people).some(p => normalize(p.name) === normalize(name));
-  const newRef = push(peopleRef);
-  await set(newRef, {
-    name,
-    normalizedName: normalize(name),
-    ticket: ticket || "",
-    entered: false,
-    enteredAt: null,
-    enteredBy: null,
-    createdAt: serverTimestamp(),
-    createdBy: currentUser?.email || "desconhecido"
-  });
-  showToast(dupe ? `${name} cadastrado(a) (já existe outro com nome parecido).` : `${name} cadastrado(a).`, dupe ? "warn" : "ok");
+  showLoading(`Cadastrando ${name}...`);
+  try{
+    const dupe = Object.values(people).some(p => normalize(p.name) === normalize(name));
+    const newRef = push(peopleRef);
+    await set(newRef, {
+      name,
+      normalizedName: normalize(name),
+      ticket: ticket || "",
+      entered: false,
+      enteredAt: null,
+      enteredBy: null,
+      createdAt: serverTimestamp(),
+      createdBy: currentUser?.uid || "desconhecido"
+    });
+
+    showLoading("Verificando no servidor...");
+    const check = await get(newRef);
+    if(!check.exists()){
+      showToast("Não deu pra confirmar o cadastro. Tente de novo.", "error");
+      return;
+    }
+
+    showToast(dupe ? `${name} cadastrado(a) (já existe outro com nome parecido).` : `${name} cadastrado(a).`, dupe ? "warn" : "ok");
+  }catch(err){
+    showToast("Erro ao cadastrar: " + err.message, "error");
+  }finally{
+    hideLoading();
+  }
 }
 
 /* ===================== IMPORTAÇÃO EM MASSA ===================== */
@@ -750,7 +757,7 @@ async function bulkImport(rawText){
       enteredAt: null,
       enteredBy: null,
       createdAt: serverTimestamp(),
-      createdBy: currentUser?.email || "desconhecido"
+      createdBy: currentUser?.uid || "desconhecido"
     };
     count++;
   });
@@ -821,14 +828,14 @@ function confirmDelete(id){
 }
 
 function exportCSV(){
-  const rows = [["Nome","Ingresso","Status","Cadastrado em","Cadastrado por","Entrada em","Marcado por"]];
+  const rows = [["Nome","Ingresso","Status","Cadastrado em","Entrada em"]];
   Object.values(people)
     .sort((a,b)=>(a.name||"").localeCompare(b.name||"", "pt-BR"))
     .forEach(p=>{
       rows.push([
         p.name || "", p.ticket || "", p.entered ? "ENTROU" : "PENDENTE",
-        fmtDateTime(p.createdAt), p.createdBy || "",
-        p.entered ? fmtDateTime(p.enteredAt) : "", p.enteredBy || ""
+        fmtDateTime(p.createdAt),
+        p.entered ? fmtDateTime(p.enteredAt) : ""
       ]);
     });
   const csv = rows.map(r => r.map(f => `"${String(f).replace(/"/g,'""')}"`).join(",")).join("\r\n");
