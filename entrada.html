@@ -597,7 +597,7 @@ async function markEntered(id){
   let stamped = false;
   try{
     const result = await runTransaction(ref(db, `people/${id}`), (current)=>{
-      if(!current) return current;         // pessoa não existe mais -> aborta
+      if(!current) return;                 // pessoa não existe mais -> aborta (undefined = abort)
       if(current.entered) return;          // já tinha entrado -> aborta (undefined = abort)
       current.entered = true;
       current.enteredAt = Date.now();
