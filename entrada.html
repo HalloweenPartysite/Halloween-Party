@@ -565,10 +565,17 @@ function escapeHtml(str){
     "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
   }[c]));
 }
+const ADMIN_PIN = "0019";
+let adminUnlocked = sessionStorage.getItem("hellhouse_admin_unlocked") === "1";
+
 function isAdmin(){
   return true;
 }
-function requireAdmin(){ return true; }
+function requireAdmin(){
+  if(adminUnlocked) return true;
+  showAdminUnlock();
+  return false;
+}
 function showAdminUnlock(){
   openModal(`
     <button class="modal-close" type="button" onclick="window.__closeModal()">✕</button>
@@ -588,8 +595,11 @@ function showAdminUnlock(){
   setTimeout(()=>document.getElementById("admin-pin")?.focus(), 50);
   document.getElementById("admin-pin-form")?.addEventListener("submit", (e)=>{
     e.preventDefault();
-    const pin = document.getElementById("admin-pin")?.value || "";
-    
+    const pinValue = document.getElementById("admin-pin")?.value || "";
+    if(pinValue !== ADMIN_PIN){
+      showToast("PIN incorreto.", "error");
+      return;
+    }
     adminUnlocked = true;
     sessionStorage.setItem("hellhouse_admin_unlocked", "1");
     currentTab = "admin";
