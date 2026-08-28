@@ -1891,7 +1891,7 @@ var QRCode;
 
 	function _getUTF8Length(sText) {
 		var replacedText = encodeURI(sText).toString().replace(/\%[0-9a-fA-F]{2}/g, 'a');
-		return replacedText.length + (replacedText.length != sText ? 3 : 0);
+		return replacedText.length + (replacedText.length != sText.length ? 3 : 0);
 	}
 	
 	/**
@@ -2340,21 +2340,21 @@ function renderCard(lote) {
   const urgEl = document.getElementById('lote-urgency-badge');
   if (urgEl) urgEl.remove();
 
-  const isSoldOutNow = lote === 4;
+  const info = LOTES[lote];
+  const isSoldOutNow = !!(info && info.soldOut); // BUG FIX: usa flag do lote em vez de comparar número fixo
   if (isSoldOutNow) {
     document.getElementById('content').innerHTML = `
       <div class="sold-out-banner">
         <span class="so-icon">\uD83D\uDD6F\uFE0F</span>
         <h3>Lotes online esgotados</h3>
         <p>Os ingressos antecipados acabaram, mas ainda dá pra entrar!<br>
-        Ingresso na porta: <strong>${formatBRL(LOTES[4].preco)}</strong> <span class="so-note">(sem taxa de serviço)</span></p>
+        Ingresso na porta: <strong>${formatBRL(info.preco)}</strong> <span class="so-note">(sem taxa de serviço)</span></p>
       </div>`;
     document.getElementById('form-card').style.display = 'none';
     return;
   }
 
   // Badge urgência — MELHORIA 3
-  const info = LOTES[lote];
   if (info && info.urgente) {
     const badge = document.createElement('div');
     badge.id = 'lote-urgency-badge';
@@ -2440,8 +2440,11 @@ function setStatus(state, label) {
 }
 
 // ── FETCH LOTE — BUG2 fix + MELHORIA 7 (visibility pause) ─
-async function fetchLote() {
-  if (document.hidden) return; // MELHORIA 7: não busca com aba oculta
+async function fetchLote(isInitial) {
+  // BUG FIX: a checagem de aba oculta só se aplica ao polling periódico,
+  // nunca à primeira chamada — senão a página trava em "Verificando..."
+  // se abrir numa aba em segundo plano.
+  if (document.hidden && !isInitial) return;
   setStatus('checking', 'Verificando disponibilidade...');
   try {
     const res = await fetch(RAW_URL + '?nocache=' + Date.now());
@@ -2451,8 +2454,9 @@ async function fetchLote() {
     if (isNaN(num) || num < 1 || num > 4) throw new Error('Valor inválido');
     currentLote = num;
     renderCard(num);
-    setStatus(num === 4 ? 'error' : 'live',
-              num === 4 ? 'Esgotado' : 'Disponível agora · ' + LOTES[num].nome);
+    const info = LOTES[num];
+    setStatus(info && info.soldOut ? 'error' : 'live',
+              info && info.soldOut ? 'Esgotado' : 'Disponível agora · ' + info.nome);
   } catch (e) {
     setStatus('error', 'Erro ao carregar');
     const urg = document.getElementById('lote-urgency-badge');
@@ -2468,15 +2472,15 @@ async function fetchLote() {
 
 function startFetchInterval() {
   if (fetchInterval) clearInterval(fetchInterval); // BUG2 fix
-  fetchInterval = setInterval(fetchLote, 30000);
+  fetchInterval = setInterval(() => fetchLote(false), 30000);
 }
 
-fetchLote();
+fetchLote(true);
 startFetchInterval();
 
 // MELHORIA 7: retoma polling quando aba volta ao foco
 document.addEventListener('visibilitychange', () => {
-  if (!document.hidden) { fetchLote(); startFetchInterval(); }
+  if (!document.hidden) { fetchLote(false); startFetchInterval(); }
   else { clearInterval(fetchInterval); fetchInterval = null; }
 });
 
@@ -2742,15 +2746,19 @@ pixCopyBtn.addEventListener('click', async () => {
 });
 
 pixConfirmBtn.addEventListener('click', () => {
+  pixConfirmBtn.classList.add('loading'); // BUG FIX: agora aciona o estado de loading definido no CSS
   showPersonalWarning(pixCurrentNome, 'comprovante', () => {
-    const msgText = `Olá! Acabei de pagar meu ingresso via Pix. 🎃\n\n` +
-                    `*Nome:* ${pixCurrentNome}\n` +
-                    `*Ingresso:* ${LOTES[currentLote] ? LOTES[currentLote].nome : ''}\n` +
-                    `*Valor pago:* ${formatBRL(pixCurrentTotal)}\n\n` +
+    pixConfirmBtn.classList.remove('loading');
+    const msgText = `Olá! Acabei de pagar meu ingresso via Pix. \n\n` +
+                    `Nome: ${pixCurrentNome}\n` +
                     `Segue o comprovante em anexo!`;
     const waUrl = 'https://wa.me/' + WHATSAPP + '?text=' + encodeURIComponent(msgText);
     window.open(waUrl, '_blank');
   });
+});
+
+document.getElementById('warning-cancel').addEventListener('click', () => {
+  pixConfirmBtn.classList.remove('loading'); // BUG FIX: garante que o loading some se o usuário cancelar o aviso
 });
 
 pixHelpBtn.addEventListener('click', () => {
