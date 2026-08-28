@@ -235,12 +235,61 @@
   @keyframes toastIn{from{opacity:0;transform:translateY(-10px);}to{opacity:1;transform:translateY(0);}}
 
   datalist{}
+
+  /* ---------- PIN DE ENTRADA ---------- */
+  #startup-pin-gate{
+    position:fixed;inset:0;z-index:999999;
+    display:flex;align-items:center;justify-content:center;
+    padding:24px;
+    background:
+      radial-gradient(ellipse 700px 420px at 50% -5%, rgba(200,29,63,.22), transparent 65%),
+      var(--bg);
+  }
+  .startup-pin-box{
+    width:min(380px,100%);
+    padding:30px 24px;
+    text-align:center;
+    background:var(--bg-elevated);
+    border:1px solid var(--border);
+    border-radius:18px;
+    box-shadow:var(--shadow);
+  }
+  .startup-pin-skull{font-size:2.8rem;margin-bottom:6px;}
+  .startup-pin-box h2{font-size:1.8rem;color:var(--blood-bright);margin-bottom:8px;}
+  .startup-pin-box p{font-size:.82rem;color:var(--text-dim);margin:0 0 20px;}
+  #startup-pin{
+    width:100%;padding:15px;
+    border-radius:10px;border:1px solid var(--border);
+    background:var(--bg-card);color:var(--text);
+    text-align:center;font-family:'Space Mono',monospace;
+    font-size:1.4rem;letter-spacing:8px;margin-bottom:12px;
+  }
+  #startup-pin:focus{border-color:var(--ember);outline:none;}
+  #startup-pin-error{min-height:20px;margin-top:10px;color:var(--blood-bright);font-size:.78rem;}
+  body.pin-locked{overflow:hidden;}
 </style>
 </head>
-<body>
+<body class="pin-locked">
+
+<!-- ===================== PIN DE ENTRADA ===================== -->
+<div id="startup-pin-gate">
+  <div class="startup-pin-box">
+    <div class="startup-pin-skull">💀</div>
+    <h2>HELLHOUSE</h2>
+    <p>Digite o PIN para acessar o controle de entrada.</p>
+    <form id="startup-pin-form">
+      <input id="startup-pin" type="password" inputmode="numeric"
+             autocomplete="off" maxlength="4" placeholder="••••"
+             aria-label="PIN de acesso" required>
+      <button type="submit" class="btn btn-blood btn-block">ENTRAR</button>
+      <div id="startup-pin-error"></div>
+    </form>
+  </div>
+</div>
+
 
 <!-- ===================== APP ===================== -->
-<div id="app-screen">
+<div id="app-screen" style="display:none;">
   <header class="topbar">
     <div class="topbar-row">
       <div class="brand">
@@ -290,6 +339,39 @@
   </div>
 </div>
 
+
+<script>
+(() => {
+  const STARTUP_PIN = "0019";
+  const gate = document.getElementById("startup-pin-gate");
+  const appScreen = document.getElementById("app-screen");
+  const form = document.getElementById("startup-pin-form");
+  const input = document.getElementById("startup-pin");
+  const error = document.getElementById("startup-pin-error");
+
+  setTimeout(() => input?.focus(), 50);
+
+  form.addEventListener("submit", (e) => {
+    e.preventDefault();
+
+    if(input.value.trim() !== STARTUP_PIN){
+      error.textContent = "PIN incorreto.";
+      input.value = "";
+      input.focus();
+      return;
+    }
+
+    error.textContent = "";
+    gate.remove();
+    appScreen.style.display = "flex";
+    document.body.classList.remove("pin-locked");
+
+    // Libera o início do Firebase somente depois do PIN.
+    window.dispatchEvent(new Event("hellhouse-pin-ok"));
+  });
+})();
+</script>
+
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
 import {
@@ -312,11 +394,18 @@ const firebaseConfig = {
 };
 
 /* ===================== INIT ===================== */
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getDatabase(app);
+let app = null;
+let auth = null;
+let db = null;
+let peopleRef = null;
 
-const peopleRef = ref(db, "people");
+function initFirebase(){
+  if(app) return;
+  app = initializeApp(firebaseConfig);
+  auth = getAuth(app);
+  db = getDatabase(app);
+  peopleRef = ref(db, "people");
+}
 
 // Sem tela de login: conecta de forma anônima em segundo plano assim que a
 // página carrega. Isso ainda satisfaz regras do Realtime Database que exigem
@@ -329,7 +418,13 @@ let authReady = false;
 // login anônimo E os dados já tiverem chegado — evita que alguém consiga
 // clicar em algo antes da conexão estar pronta (o que antes podia falhar
 // silenciosamente com erro de permissão).
-showLoading("Conectando...");
+let bootStarted = false;
+
+function startFirebaseBoot(){
+  if(bootStarted) return;
+  bootStarted = true;
+  initFirebase();
+  showLoading("Conectando...");
 function maybeHideBootLoading(){
   if(authReady && loaded){
     clearTimeout(bootTimeout);
@@ -346,16 +441,13 @@ const bootTimeout = setTimeout(()=>{
   if(!(authReady && loaded)){
     showStuck("Demorando pra conectar... verifique sua internet ou toque em recarregar.");
   }
-}, 6000);
+}, 8000);
 
 // Guarda a sessão anônima no navegador antes de logar, pra reaproveitar o
 // signInAnonymously e não criar uma conta nova a cada refresh — a sessão
 // fica salva no navegador (localStorage) e é reaproveitada nos acessos seguintes.
-Promise.race([
-  setPersistence(auth, browserLocalPersistence),
-  new Promise(resolve => setTimeout(resolve, 2500))
-])
-  .catch(()=>{})
+setPersistence(auth, browserLocalPersistence)
+  .catch(()=>{ /* se falhar (ex: aba anônima do navegador), segue sem persistir */ })
   .finally(()=>{
     signInAnonymously(auth).catch((err) => {
       clearTimeout(bootTimeout);
@@ -363,6 +455,12 @@ Promise.race([
       showToast("Erro ao conectar: " + err.message, "error");
     });
   });
+  registerAuthListener();
+  registerPeopleListener();
+  registerConnectionListener();
+}
+
+window.addEventListener("hellhouse-pin-ok", startFirebaseBoot, {once:true});
 
 /* ===================== BACKUP ===================== */
 // O backup local fica salvo automaticamente neste celular/navegador.
@@ -478,7 +576,6 @@ function openBackupModal(){
 }
 
 async function restoreBackupPayload(payload){
-  if(!requireAdmin()) return;
   const backupPeople = payload?.people;
   if(!backupPeople || typeof backupPeople !== "object"){
     showToast("Arquivo de backup inválido.", "error");
@@ -502,13 +599,8 @@ async function restoreBackupPayload(payload){
     return;
   }
 
-  showLoading("Salvando segurança antes da restauração...");
+  showLoading("Restaurando backup...");
   try{
-    if(Object.keys(people || {}).length > 0){
-      saveLocalBackup(people, false);
-      await saveCloudBackup(people);
-    }
-    showLoading("Restaurando backup...");
     // Substitui somente o nó people. O backup em si não é apagado.
     await set(peopleRef, backupPeople);
     const check = await get(peopleRef);
@@ -543,8 +635,6 @@ document.getElementById("backup-file-input").addEventListener("change", async (e
 
 /* ===================== STATE ===================== */
 let currentUser = null;
-let adminUnlocked = true;
-let emptyWarningShown = false;
 let people = {};
 let loaded = false;
 let currentTab = "pending"; // pending | entered | admin
@@ -565,49 +655,10 @@ function escapeHtml(str){
     "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
   }[c]));
 }
-const ADMIN_PIN = "0019";
-let adminUnlocked = sessionStorage.getItem("hellhouse_admin_unlocked") === "1";
-
 function isAdmin(){
+  // Sem login não há como distinguir usuários, então a área admin fica
+  // liberada para qualquer pessoa que tenha o link.
   return true;
-}
-function requireAdmin(){
-  if(adminUnlocked) return true;
-  showAdminUnlock();
-  return false;
-}
-function showAdminUnlock(){
-  openModal(`
-    <button class="modal-close" type="button" onclick="window.__closeModal()">✕</button>
-    <h2>Acesso administrativo</h2>
-    <p class="hint" style="margin-bottom:14px;">Digite o PIN para abrir as funções de administrador.</p>
-    <form id="admin-pin-form">
-      <div class="field">
-        <label for="admin-pin">PIN</label>
-        <input id="admin-pin" type="password" inputmode="numeric" autocomplete="off" maxlength="12" required placeholder="PIN administrativo">
-      </div>
-      <div class="modal-actions">
-        <button type="button" class="btn btn-ghost" onclick="window.__closeModal()">Cancelar</button>
-        <button type="submit" class="btn btn-blood">Entrar</button>
-      </div>
-    </form>
-  `);
-  setTimeout(()=>document.getElementById("admin-pin")?.focus(), 50);
-  document.getElementById("admin-pin-form")?.addEventListener("submit", (e)=>{
-    e.preventDefault();
-    const pinValue = document.getElementById("admin-pin")?.value || "";
-    if(pinValue !== ADMIN_PIN){
-      showToast("PIN incorreto.", "error");
-      return;
-    }
-    adminUnlocked = true;
-    sessionStorage.setItem("hellhouse_admin_unlocked", "1");
-    currentTab = "admin";
-    closeModal();
-    renderTabs();
-    render();
-    showToast("Modo administrador ativado.", "ok");
-  });
 }
 function fmtTime(ms){
   if(!ms) return "";
@@ -664,17 +715,17 @@ document.getElementById("modal-overlay").addEventListener("click", (e)=>{
 });
 
 /* ===================== AUTH (anônimo, sem tela de login) ===================== */
-onAuthStateChanged(auth, (user)=>{
+function registerAuthListener(){ onAuthStateChanged(auth, (user)=>{
   currentUser = user;
   authReady = !!user;
   maybeHideBootLoading();
   renderTabs();
   render();
-});
+}); }
 
 /* ===================== REALTIME DATA ===================== */
 let cloudBackupTimer = null;
-onValue(peopleRef, (snapshot)=>{
+function registerPeopleListener(){ onValue(peopleRef, (snapshot)=>{
   people = snapshot.val() || {};
   loaded = true;
 
@@ -682,12 +733,10 @@ onValue(peopleRef, (snapshot)=>{
   // Se o Firebase voltar vazio, não sobrescrevemos o backup local.
   if(Object.keys(people).length > 0){
     saveLocalBackup(people);
-    emptyWarningShown = false;
     clearTimeout(cloudBackupTimer);
     cloudBackupTimer = setTimeout(()=>saveCloudBackup(people), 500);
-  }else if(getLocalBackup() && !emptyWarningShown){
+  }else if(getLocalBackup()){
     // Não restaura sozinho: apenas avisa para evitar uma restauração errada.
-    emptyWarningShown = true;
     showToast("⚠️ O banco está vazio. Há um backup salvo neste celular.", "warn");
   }
 
@@ -701,13 +750,13 @@ onValue(peopleRef, (snapshot)=>{
     clearTimeout(bootTimeout);
     showStuck("Não foi possível carregar a lista. Toque em recarregar ou avise o suporte.");
   }
-});
+}); }
 
-onValue(ref(db, ".info/connected"), (snap)=>{
+function registerConnectionListener(){ onValue(ref(db, ".info/connected"), (snap)=>{
   const dot = document.getElementById("conn-dot");
   if(snap.val() === true) dot.classList.remove("off");
   else dot.classList.add("off");
-});
+}); }
 
 /* ===================== TABS ===================== */
 function renderTabs(){
@@ -716,21 +765,12 @@ function renderTabs(){
     {id:"pending", label:"PENDENTES"},
     {id:"entered", label:"JÁ ENTRARAM"},
   ];
-  items.push({id:"admin", label:isAdmin() ? "ADMIN" : "🔒 ADMIN"});
+  if(isAdmin()) items.push({id:"admin", label:"ADMIN"});
   tabsEl.innerHTML = items.map(t => `
     <button class="tab ${currentTab===t.id?'active':''}" data-tab="${t.id}" type="button">${t.label}</button>
   `).join("");
   tabsEl.querySelectorAll(".tab").forEach(btn=>{
-    btn.addEventListener("click", ()=>{
-      const tab = btn.dataset.tab;
-      if(tab === "admin" && !isAdmin()){
-        showAdminUnlock();
-        return;
-      }
-      currentTab = tab;
-      renderTabs();
-      render();
-    });
+    btn.addEventListener("click", ()=>{ currentTab = btn.dataset.tab; renderTabs(); render(); });
   });
 }
 
@@ -758,7 +798,6 @@ function getFilteredEntries(){
 }
 
 function render(){
-  if(currentTab === "admin" && !isAdmin()) currentTab = "pending";
   document.getElementById("count-pending").textContent = Object.values(people).filter(p=>!p.entered).length;
   document.getElementById("count-entered").textContent = Object.values(people).filter(p=>p.entered).length;
 
@@ -785,19 +824,10 @@ function render(){
         <div style="display:flex;gap:6px;flex-wrap:wrap;">
           <button class="btn btn-ghost btn-sm" id="btn-backup-admin">💾 Backup</button>
           <button class="btn btn-ghost btn-sm" id="btn-export">Exportar CSV</button>
-           <button class="btn btn-ghost btn-sm" id="btn-lock-admin">🔒 Bloquear</button>
         </div>
       </div>`;
     document.getElementById("btn-export")?.addEventListener("click", exportCSV);
     document.getElementById("btn-backup-admin")?.addEventListener("click", openBackupModal);
-    document.getElementById("btn-lock-admin")?.addEventListener("click", ()=>{
-      adminUnlocked = false;
-      sessionStorage.removeItem("hellhouse_admin_unlocked");
-      currentTab = "pending";
-      renderTabs();
-      render();
-      showToast("Modo administrador bloqueado.", "ok");
-    });
   }else{
     toolbarSlot.innerHTML = "";
   }
@@ -873,7 +903,7 @@ document.getElementById("list").addEventListener("click", (e)=>{
   const action = btn.dataset.action;
   if(action === "enter") markEntered(id);
   else if(action === "undo") markPending(id);
-  else if(action === "toggle") { if(!requireAdmin()) return; people[id]?.entered ? markPending(id) : markEntered(id); }
+  else if(action === "toggle") people[id]?.entered ? markPending(id) : markEntered(id);
   else if(action === "edit") openEditModal(id);
   else if(action === "delete") confirmDelete(id);
 });
@@ -1020,21 +1050,19 @@ function openAddModal(){
     const name = document.getElementById("add-name").value.trim();
     const ticket = document.getElementById("add-ticket").value.trim();
     if(!name){ if(submitBtn) submitBtn.disabled = false; return; }
-    const ok = await addPerson(name, ticket);
-    if(ok) closeModal();
+    await addPerson(name, ticket);
+    closeModal();
   });
 }
 
 async function addPerson(name, ticket){
   if(!authReady){
     showToast("Ainda conectando... aguarde um instante e tente de novo.", "warn");
-    return false;
+    return;
   }
   showLoading(`Cadastrando ${name}...`);
   try{
-    const latest = await get(peopleRef);
-    const latestPeople = latest.val() || {};
-    const dupe = Object.values(latestPeople).some(p => normalize(p.name) === normalize(name));
+    const dupe = Object.values(people).some(p => normalize(p.name) === normalize(name));
     const newRef = push(peopleRef);
     await set(newRef, {
       name,
@@ -1051,14 +1079,12 @@ async function addPerson(name, ticket){
     const check = await get(newRef);
     if(!check.exists()){
       showToast("Não deu pra confirmar o cadastro. Tente de novo.", "error");
-      return false;
+      return;
     }
 
     showToast(dupe ? `${name} cadastrado(a) (já existe outro com nome parecido).` : `${name} cadastrado(a).`, dupe ? "warn" : "ok");
-    return true;
   }catch(err){
     showToast("Erro ao cadastrar: " + err.message, "error");
-    return false;
   }finally{
     hideLoading();
   }
@@ -1136,8 +1162,8 @@ function openImportModal(){
   confirmBtn.addEventListener("click", async ()=>{
     if(confirmBtn.disabled) return;
     confirmBtn.disabled = true;
-    const ok = await bulkImport(textEl.value);
-    if(ok) closeModal();
+    await bulkImport(textEl.value);
+    closeModal();
   });
 }
 
@@ -1153,10 +1179,10 @@ async function bulkImport(rawText){
   // a checagem de duplicados/linhas estranhas mostrada na prévia e importava
   // TUDO, inclusive nomes repetidos e lixo — agora os dois ficam sempre iguais.
   const analysis = analyzeImport(rawText);
-  if(!analysis.totalLines){ showToast("Cole ao menos um nome.", "error"); return false; }
+  if(!analysis.totalLines){ showToast("Cole ao menos um nome.", "error"); return; }
   if(analysis.toImport.length === 0){
     showToast("Nada novo para importar (tudo já cadastrado, repetido ou inválido).", "warn");
-    return false;
+    return;
   }
 
   importInFlight = true;
@@ -1189,17 +1215,15 @@ async function bulkImport(rawText){
     const check = await get(ref(db, `people/${sampleId}`));
     if(!check.exists()){
       showToast("Não deu pra confirmar a importação. Confira a lista e tente de novo.", "error");
-      return false;
+      return;
     }
 
     let msg = `${analysis.toImport.length} pessoa(s) importada(s).`;
     const skipped = analysis.duplicatesExisting + analysis.duplicatesInPaste + analysis.weird;
     if(skipped) msg += ` ${skipped} linha(s) ignorada(s) (repetida ou inválida).`;
     showToast(msg, "ok");
-    return true;
   }catch(err){
     showToast("Erro ao importar: " + err.message, "error");
-    return false;
   }finally{
     importInFlight = false;
     if(confirmBtn) confirmBtn.disabled = false;
@@ -1209,7 +1233,6 @@ async function bulkImport(rawText){
 
 /* ===================== ADMIN: editar / excluir / exportar ===================== */
 function openEditModal(id){
-  if(!requireAdmin()) return;
   const p = people[id];
   if(!p) return;
   openModal(`
@@ -1262,7 +1285,6 @@ function openEditModal(id){
 }
 
 function confirmDelete(id){
-  if(!requireAdmin()) return;
   const p = people[id];
   if(!p) return;
   openModal(`
@@ -1284,8 +1306,6 @@ function confirmDelete(id){
     confirmBtn.disabled = true;
     showLoading(`Excluindo ${p.name}...`);
     try{
-      saveLocalBackup(people, false);
-      await saveCloudBackup(people);
       await remove(ref(db, `people/${id}`));
       showToast("Registro excluído.", "ok");
     }catch(err){
@@ -1298,7 +1318,6 @@ function confirmDelete(id){
 }
 
 function exportCSV(){
-  if(!requireAdmin()) return;
   const rows = [["Nome","Ingresso","Status","Cadastrado em","Entrada em"]];
   Object.values(people)
     .sort((a,b)=>(a.name||"").localeCompare(b.name||"", "pt-BR"))
