@@ -1,623 +1,848 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>HELLHOUSE — Entrada</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>HELLHOUSE — Entrada</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>💀</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Metal+Mania&family=Manrope:wght@400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#120a17;
+    --bg-elevated:#1c1120;
+    --bg-card:#241629;
+    --border:#382a3d;
+    --border-soft:#2a1e2f;
+    --text:#f4ece8;
+    --text-dim:#ab9bb0;
+    --blood:#c81d3f;
+    --blood-bright:#e8355a;
+    --blood-dim:#5c1122;
+    --ember:#f2a33d;
+    --ember-dim:#4a3216;
+    --toxic:#43e07a;
+    --toxic-dim:#173a26;
+    --focus:#f2a33d;
+    --radius:14px;
+    --shadow: 0 8px 24px rgba(0,0,0,.45);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:
+      radial-gradient(ellipse 900px 500px at 50% -10%, rgba(200,29,63,.18), transparent 60%),
+      var(--bg);
+    color:var(--text);
+    font-family:'Manrope',system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+    min-height:100vh;
+    -webkit-tap-highlight-color:transparent;
+  }
+  h1,h2,h3{font-family:'Metal Mania',cursive;font-weight:400;letter-spacing:.5px;margin:0;}
+  ::selection{background:var(--blood-dim);color:#fff;}
+  :focus-visible{outline:2px solid var(--focus);outline-offset:2px;border-radius:6px;}
+  button{font-family:inherit;cursor:pointer;}
+  input,textarea{font-family:inherit;}
 
-  <style>
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
+  /* ---------- LOGIN ---------- */
+  #login-screen{
+    min-height:100vh;display:flex;align-items:center;justify-content:center;
+    padding:24px;
+  }
+  .login-card{
+    width:100%;max-width:380px;background:var(--bg-elevated);
+    border:1px solid var(--border);border-radius:var(--radius);
+    padding:32px 28px;box-shadow:var(--shadow);
+  }
+  .login-logo{text-align:center;margin-bottom:6px;}
+  .login-logo h1{font-size:2.4rem;color:var(--blood-bright);text-shadow:0 0 18px rgba(200,29,63,.5);}
+  .login-sub{text-align:center;color:var(--text-dim);font-size:.82rem;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:28px;}
+  .field{margin-bottom:16px;}
+  .field label{display:block;font-size:.78rem;color:var(--text-dim);margin-bottom:6px;letter-spacing:.3px;}
+  .field input{
+    width:100%;padding:13px 14px;border-radius:10px;border:1px solid var(--border);
+    background:var(--bg-card);color:var(--text);font-size:1rem;
+  }
+  .field input:focus{border-color:var(--ember);}
+  .btn{
+    display:inline-flex;align-items:center;justify-content:center;gap:8px;
+    border:none;border-radius:10px;padding:13px 18px;font-size:.95rem;font-weight:700;
+    transition:transform .1s ease, filter .15s ease; user-select:none;
+  }
+  .btn:active{transform:scale(.97);}
+  .btn-blood{background:linear-gradient(180deg,var(--blood-bright),var(--blood));color:#fff;box-shadow:0 4px 14px rgba(200,29,63,.35);}
+  .btn-blood:hover{filter:brightness(1.08);}
+  .btn-block{width:100%;}
+  .btn-ghost{background:transparent;color:var(--text-dim);border:1px solid var(--border);}
+  .btn-ghost:hover{color:var(--text);border-color:var(--text-dim);}
+  .btn-toxic{background:linear-gradient(180deg,#4fef8a,var(--toxic));color:#08210f;}
+  .btn-sm{padding:9px 12px;font-size:.82rem;border-radius:8px;}
+  .btn:disabled{opacity:.5;pointer-events:none;}
+  #login-error{color:var(--blood-bright);font-size:.85rem;margin-top:4px;min-height:1.1em;}
 
-    body {
-      background: #080808;
-      color: #fff;
-      font-family: Arial, Helvetica, sans-serif;
-      min-height: 100vh;
-    }
+  /* ---------- APP SHELL ---------- */
+  #app-screen{display:none;min-height:100vh;flex-direction:column;}
+  header.topbar{
+    position:sticky;top:0;z-index:20;
+    background:rgba(18,10,23,.92);backdrop-filter:blur(10px);
+    border-bottom:1px solid var(--border-soft);
+    padding:14px 16px 0;
+  }
+  .topbar-row{display:flex;align-items:center;justify-content:space-between;gap:10px;}
+  .brand{display:flex;align-items:center;gap:8px;}
+  .brand h1{font-size:1.5rem;color:var(--blood-bright);}
+  .brand .date{font-size:.68rem;color:var(--text-dim);letter-spacing:1px;}
+  .conn-dot{width:8px;height:8px;border-radius:50%;background:var(--toxic);box-shadow:0 0 6px var(--toxic);flex-shrink:0;}
+  .conn-dot.off{background:var(--blood-bright);box-shadow:0 0 6px var(--blood-bright);animation:blink 1s infinite;}
+  @keyframes blink{50%{opacity:.3;}}
+  .who{display:flex;align-items:center;gap:8px;font-size:.72rem;color:var(--text-dim);}
+  .who button{background:none;border:none;color:var(--text-dim);text-decoration:underline;font-size:.72rem;padding:4px;}
 
-    .container {
-      width: 100%;
-      max-width: 650px;
-      margin: auto;
-      padding: 25px 16px 40px;
-    }
+  .counters{display:flex;gap:10px;margin:14px 0;}
+  .counter{
+    flex:1;background:var(--bg-elevated);border:1px solid var(--border);border-radius:12px;
+    padding:10px 12px;text-align:center;
+  }
+  .counter .num{font-family:'Space Mono',monospace;font-size:1.5rem;font-weight:700;line-height:1;}
+  .counter .lbl{font-size:.66rem;letter-spacing:1.2px;color:var(--text-dim);text-transform:uppercase;margin-top:2px;}
+  .counter.pending .num{color:var(--ember);}
+  .counter.entered .num{color:var(--toxic);}
 
-    header {
-      text-align: center;
-      margin-bottom: 25px;
-    }
+  .search-wrap{position:relative;margin-bottom:10px;}
+  .search-wrap input{
+    width:100%;padding:12px 14px 12px 40px;border-radius:10px;border:1px solid var(--border);
+    background:var(--bg-card);color:var(--text);font-size:.95rem;
+  }
+  .search-wrap input:focus{border-color:var(--ember);}
+  .search-wrap svg{position:absolute;left:12px;top:50%;transform:translateY(-50%);width:18px;height:18px;stroke:var(--text-dim);}
 
-    .logo {
-      font-size: 38px;
-      font-weight: 900;
-      letter-spacing: 5px;
-    }
+  .tabs{display:flex;gap:6px;padding-bottom:10px;}
+  .tab{
+    flex:1;padding:10px 8px;text-align:center;border-radius:10px;border:1px solid var(--border);
+    background:transparent;color:var(--text-dim);font-size:.78rem;font-weight:700;letter-spacing:.4px;
+  }
+  .tab.active{background:var(--bg-card);border-color:var(--ember);color:var(--text);}
+  .tab .tcount{opacity:.7;font-family:'Space Mono',monospace;}
 
-    .subtitle {
-      color: #999;
-      font-size: 13px;
-      margin-top: 5px;
-      letter-spacing: 2px;
-    }
+  main{flex:1;padding:6px 16px 100px;max-width:720px;width:100%;margin:0 auto;}
+  .hint{font-size:.72rem;color:var(--text-dim);margin:2px 2px 10px;}
 
-    .stats {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
-      margin-bottom: 18px;
-    }
+  /* ---------- CARDS ---------- */
+  #list{display:flex;flex-direction:column;gap:10px;}
+  .empty-state{text-align:center;padding:60px 20px;color:var(--text-dim);}
+  .empty-state .glyph{font-size:2.2rem;margin-bottom:8px;}
 
-    .stat {
-      background: #111;
-      border: 1px solid #242424;
-      border-radius: 12px;
-      padding: 15px;
-      text-align: center;
-    }
+  .card{
+    position:relative;overflow:hidden;
+    background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);
+    padding:14px 14px;display:flex;align-items:center;gap:12px;
+  }
+  .card.pending{border-left:3px solid var(--ember);}
+  .card.entered{border-left:3px solid var(--toxic);}
+  .card-info{flex:1;min-width:0;}
+  .card-name{font-size:1.02rem;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .card-meta{display:flex;flex-wrap:wrap;gap:6px;margin-top:5px;align-items:center;}
+  .badge{
+    font-size:.66rem;font-weight:700;letter-spacing:.4px;padding:3px 8px;border-radius:20px;
+    text-transform:uppercase;
+  }
+  .badge-ticket{background:var(--bg-elevated);color:var(--text-dim);border:1px solid var(--border);}
+  .badge-entered{background:var(--toxic-dim);color:var(--toxic);}
+  .badge-pending{background:var(--ember-dim);color:var(--ember);}
+  .card-time{font-size:.7rem;color:var(--text-dim);font-family:'Space Mono',monospace;}
+  .card-actions{flex-shrink:0;display:flex;gap:6px;}
 
-    .stat-number {
-      font-size: 28px;
-      font-weight: 800;
-    }
+  /* stamp confirmation */
+  .card.just-stamped::after{
+    content:'ENTROU';
+    position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+    font-family:'Metal Mania',cursive;font-size:1.6rem;color:var(--blood-bright);
+    background:rgba(18,10,23,.72);
+    border:3px solid var(--blood-bright);border-radius:var(--radius);
+    animation:stampIn .7s cubic-bezier(.2,1.4,.4,1) forwards;
+  }
+  @keyframes stampIn{
+    0%{opacity:0;transform:scale(2.4) rotate(-14deg);}
+    55%{opacity:1;transform:scale(.94) rotate(-6deg);}
+    75%{transform:scale(1.04) rotate(-8deg);}
+    100%{opacity:0;transform:scale(1) rotate(-8deg);}
+  }
+  @media (prefers-reduced-motion: reduce){
+    .card.just-stamped::after{animation:none;opacity:.9;}
+    .conn-dot.off{animation:none;}
+  }
 
-    .stat-label {
-      color: #888;
-      font-size: 12px;
-      margin-top: 4px;
-    }
+  /* admin table rows */
+  .card.admin-row{padding:10px 12px;gap:8px;}
+  .card.admin-row .card-name{font-size:.92rem;}
+  .admin-icon-btn{
+    width:34px;height:34px;border-radius:8px;border:1px solid var(--border);background:var(--bg-elevated);
+    display:flex;align-items:center;justify-content:center;color:var(--text-dim);
+  }
+  .admin-icon-btn:hover{color:var(--text);border-color:var(--text-dim);}
+  .admin-toolbar{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:10px;flex-wrap:wrap;}
+  .admin-stats{font-size:.75rem;color:var(--text-dim);font-family:'Space Mono',monospace;}
 
-    .search {
-      width: 100%;
-      padding: 16px;
-      background: #111;
-      color: white;
-      border: 1px solid #292929;
-      border-radius: 12px;
-      outline: none;
-      font-size: 16px;
-      margin-bottom: 12px;
-    }
+  /* ---------- FAB + modal ---------- */
+  .fab-row{position:fixed;bottom:20px;left:0;right:0;display:flex;justify-content:center;gap:10px;z-index:15;padding:0 16px;}
+  .fab{
+    background:linear-gradient(180deg,var(--blood-bright),var(--blood));color:#fff;
+    border:none;border-radius:30px;padding:14px 22px;font-weight:800;font-size:.9rem;
+    box-shadow:0 8px 22px rgba(200,29,63,.4);display:flex;align-items:center;gap:8px;
+  }
+  .fab.secondary{background:var(--bg-elevated);border:1px solid var(--border);box-shadow:var(--shadow);color:var(--text);}
 
-    .search:focus {
-      border-color: #555;
-    }
+  #modal-overlay{
+    display:none;position:fixed;inset:0;background:rgba(8,4,10,.7);backdrop-filter:blur(2px);
+    z-index:50;align-items:flex-end;justify-content:center;
+  }
+  #modal-overlay.open{display:flex;}
+  .modal{
+    width:100%;max-width:480px;background:var(--bg-elevated);border:1px solid var(--border);
+    border-radius:20px 20px 0 0;padding:22px 20px 26px;max-height:88vh;overflow-y:auto;
+    animation:slideUp .22s ease;
+  }
+  @media(min-width:540px){
+    #modal-overlay{align-items:center;}
+    .modal{border-radius:16px;}
+  }
+  @keyframes slideUp{from{transform:translateY(24px);opacity:0;}to{transform:translateY(0);opacity:1;}}
+  .modal h2{font-size:1.3rem;color:var(--blood-bright);margin-bottom:16px;}
+  .modal-close{position:absolute;top:14px;right:16px;background:none;border:none;color:var(--text-dim);font-size:1.3rem;}
+  .modal-actions{display:flex;gap:10px;margin-top:18px;}
+  .modal-actions .btn{flex:1;}
+  textarea.field-textarea{
+    width:100%;min-height:130px;padding:12px;border-radius:10px;border:1px solid var(--border);
+    background:var(--bg-card);color:var(--text);font-size:.88rem;font-family:'Space Mono',monospace;resize:vertical;
+  }
+  .import-preview{font-size:.78rem;color:var(--text-dim);margin-top:8px;}
 
-    .add-box {
-      display: flex;
-      gap: 8px;
-      margin-bottom: 18px;
-    }
+  /* ---------- toasts ---------- */
+  #toast-wrap{position:fixed;top:14px;left:0;right:0;display:flex;flex-direction:column;align-items:center;gap:8px;z-index:100;pointer-events:none;}
+  .toast{
+    background:var(--bg-elevated);border:1px solid var(--border);border-left:4px solid var(--toxic);
+    color:var(--text);padding:11px 16px;border-radius:10px;font-size:.85rem;box-shadow:var(--shadow);
+    max-width:90vw;animation:toastIn .25s ease;
+  }
+  .toast.warn{border-left-color:var(--ember);}
+  .toast.error{border-left-color:var(--blood-bright);}
+  @keyframes toastIn{from{opacity:0;transform:translateY(-10px);}to{opacity:1;transform:translateY(0);}}
 
-    .add-input {
-      flex: 1;
-      padding: 14px;
-      background: #111;
-      color: white;
-      border: 1px solid #292929;
-      border-radius: 10px;
-      outline: none;
-      font-size: 15px;
-    }
-
-    button {
-      border: none;
-      cursor: pointer;
-      font-weight: 700;
-    }
-
-    .add-button {
-      background: white;
-      color: black;
-      padding: 0 18px;
-      border-radius: 10px;
-    }
-
-    .tabs {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 8px;
-      margin-bottom: 15px;
-    }
-
-    .tab {
-      padding: 13px;
-      border-radius: 10px;
-      background: #111;
-      color: #888;
-      border: 1px solid #222;
-    }
-
-    .tab.active {
-      background: #fff;
-      color: #000;
-    }
-
-    .person {
-      background: #111;
-      border: 1px solid #222;
-      border-radius: 12px;
-      padding: 15px;
-      margin-bottom: 9px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 10px;
-    }
-
-    .person-name {
-      font-size: 16px;
-      font-weight: 700;
-      word-break: break-word;
-    }
-
-    .person-info {
-      color: #777;
-      font-size: 11px;
-      margin-top: 4px;
-    }
-
-    .enter-button {
-      background: #fff;
-      color: #000;
-      padding: 11px 14px;
-      border-radius: 8px;
-      white-space: nowrap;
-    }
-
-    .undo-button {
-      background: #222;
-      color: white;
-      padding: 10px 12px;
-      border-radius: 8px;
-      white-space: nowrap;
-    }
-
-    .empty {
-      text-align: center;
-      color: #666;
-      padding: 40px 10px;
-    }
-
-    .loading {
-      text-align: center;
-      color: #777;
-      padding: 30px;
-    }
-
-    .error {
-      background: #250d0d;
-      border: 1px solid #5b2020;
-      color: #ff8d8d;
-      padding: 14px;
-      border-radius: 10px;
-      margin-bottom: 15px;
-      display: none;
-      font-size: 13px;
-    }
-
-    @media (max-width: 450px) {
-      .logo {
-        font-size: 30px;
-      }
-
-      .person {
-        align-items: flex-start;
-      }
-
-      .enter-button,
-      .undo-button {
-        padding: 10px;
-        font-size: 12px;
-      }
-    }
-  </style>
+  datalist{}
+</style>
 </head>
-
 <body>
 
-<div class="container">
-
-  <header>
-    <div class="logo">HELLHOUSE</div>
-    <div class="subtitle">CONTROLE DE ENTRADA • 03/10</div>
-  </header>
-
-  <div id="error" class="error"></div>
-
-  <div class="stats">
-    <div class="stat">
-      <div id="pendingCount" class="stat-number">0</div>
-      <div class="stat-label">PENDENTES</div>
-    </div>
-
-    <div class="stat">
-      <div id="enteredCount" class="stat-number">0</div>
-      <div class="stat-label">JÁ ENTRARAM</div>
-    </div>
+<!-- ===================== LOGIN ===================== -->
+<div id="login-screen">
+  <div class="login-card">
+    <div class="login-logo"><h1>HELLHOUSE</h1></div>
+    <div class="login-sub">Acesso da equipe · 03/10</div>
+    <form id="login-form">
+      <div class="field">
+        <label for="login-email">E-mail</label>
+        <input id="login-email" type="email" autocomplete="username" required placeholder="portaria1@hellhouse.local">
+      </div>
+      <div class="field">
+        <label for="login-password">Senha</label>
+        <input id="login-password" type="password" autocomplete="current-password" required placeholder="••••••••">
+      </div>
+      <div id="login-error"></div>
+      <button type="submit" class="btn btn-blood btn-block" id="login-btn">ENTRAR</button>
+    </form>
   </div>
-
-  <input
-    id="search"
-    class="search"
-    type="text"
-    placeholder="🔎 Procurar nome..."
-  >
-
-  <div class="add-box">
-    <input
-      id="newName"
-      class="add-input"
-      type="text"
-      placeholder="Nome da pessoa"
-    >
-
-    <button class="add-button" onclick="addPerson()">
-      + ADICIONAR
-    </button>
-  </div>
-
-  <div class="tabs">
-    <button id="pendingTab" class="tab active" onclick="changeTab('pending')">
-      PENDENTES
-    </button>
-
-    <button id="enteredTab" class="tab" onclick="changeTab('entered')">
-      JÁ ENTRARAM
-    </button>
-  </div>
-
-  <div id="list">
-    <div class="loading">Carregando lista...</div>
-  </div>
-
 </div>
 
-<script type="module">
-
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
-
-  import {
-    getDatabase,
-    ref,
-    push,
-    set,
-    update,
-    onValue
-  } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-database.js";
-
-
-  // ==============================
-  // FIREBASE
-  // ==============================
-
-  const firebaseConfig = {
-    apiKey: "AIzaSyCpf7kWZzp62ywgk6kEERHw4KIc06sQe7E",
-    authDomain: "halw-1cf6e.firebaseapp.com",
-    databaseURL: "https://halw-1cf6e-default-rtdb.firebaseio.com",
-    projectId: "halw-1cf6e",
-    storageBucket: "halw-1cf6e.firebasestorage.app",
-    messagingSenderId: "770946829148",
-    appId: "1:770946829148:web:8732606b52465f3b6e8f99",
-    measurementId: "G-42H9QJ1469"
-  };
-
-
-  const app = initializeApp(firebaseConfig);
-  const db = getDatabase(app);
-
-
-  // ==============================
-  // VARIÁVEIS
-  // ==============================
-
-  let people = {};
-  let currentTab = "pending";
-
-
-  // ==============================
-  // LER BANCO EM TEMPO REAL
-  // ==============================
-
-  const peopleRef = ref(db, "people");
-
-  onValue(peopleRef, (snapshot) => {
-
-    people = snapshot.val() || {};
-
-    render();
-
-  }, (error) => {
-
-    showError("Erro ao acessar o banco de dados: " + error.message);
-
-  });
-
-
-  // ==============================
-  // MOSTRAR LISTA
-  // ==============================
-
-  function render() {
-
-    const list = document.getElementById("list");
-    const search = document.getElementById("search").value
-      .toLowerCase()
-      .trim();
-
-    const entries = Object.entries(people);
-
-    const pending = entries.filter(([id, person]) => !person.entered);
-    const entered = entries.filter(([id, person]) => person.entered);
-
-    document.getElementById("pendingCount").textContent = pending.length;
-    document.getElementById("enteredCount").textContent = entered.length;
-
-
-    let selected = currentTab === "pending"
-      ? pending
-      : entered;
-
-
-    if (search) {
-
-      selected = selected.filter(([id, person]) =>
-        person.name.toLowerCase().includes(search)
-      );
-
-    }
-
-
-    selected.sort((a, b) =>
-      a[1].name.localeCompare(b[1].name)
-    );
-
-
-    if (selected.length === 0) {
-
-      list.innerHTML = `
-        <div class="empty">
-          ${search ? "Nenhuma pessoa encontrada." : "Nenhuma pessoa nesta lista."}
+<!-- ===================== APP ===================== -->
+<div id="app-screen">
+  <header class="topbar">
+    <div class="topbar-row">
+      <div class="brand">
+        <span class="conn-dot" id="conn-dot"></span>
+        <div>
+          <h1>HELLHOUSE</h1>
+          <div class="date">CONTROLE DE ENTRADA · 03/10</div>
         </div>
-      `;
+      </div>
+      <div class="who">
+        <span id="who-email"></span>
+        <button id="logout-btn" type="button">sair</button>
+      </div>
+    </div>
 
-      return;
+    <div class="counters">
+      <div class="counter pending"><div class="num" id="count-pending">0</div><div class="lbl">Pendentes</div></div>
+      <div class="counter entered"><div class="num" id="count-entered">0</div><div class="lbl">Já entraram</div></div>
+    </div>
 
-    }
+    <div class="search-wrap">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input id="search-input" type="text" placeholder="Buscar por nome..." autocomplete="off">
+    </div>
 
+    <div class="tabs" id="tabs"></div>
+  </header>
 
-    list.innerHTML = selected.map(([id, person]) => {
+  <main>
+    <div class="hint" id="result-hint"></div>
+    <div id="admin-toolbar-slot"></div>
+    <div id="list"><div class="empty-state">Carregando lista...</div></div>
+  </main>
 
-      if (currentTab === "pending") {
+  <div class="fab-row">
+    <button class="fab secondary" id="btn-open-import" type="button">📋 Colar lista</button>
+    <button class="fab" id="btn-open-add" type="button">+ Adicionar</button>
+  </div>
+</div>
 
-        return `
-          <div class="person">
+<div id="modal-overlay"><div class="modal" id="modal-body"></div></div>
+<div id="toast-wrap"></div>
 
-            <div>
-              <div class="person-name">
-                ${escapeHTML(person.name)}
-              </div>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
+import {
+  getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut,
+  setPersistence, browserLocalPersistence
+} from "https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
+import {
+  getDatabase, ref, push, set, update, remove, onValue, runTransaction, serverTimestamp
+} from "https://www.gstatic.com/firebasejs/12.1.0/firebase-database.js";
 
-              <div class="person-info">
-                ${person.ticket || "Ingresso"}
-              </div>
-            </div>
+/* ===================== CONFIG ===================== */
+const firebaseConfig = {
+  apiKey: "AIzaSyCpf7kWZzp62ywgk6kEERHw4KIc06sQe7E",
+  authDomain: "halw-1cf6e.firebaseapp.com",
+  databaseURL: "https://halw-1cf6e-default-rtdb.firebaseio.com",
+  projectId: "halw-1cf6e",
+  storageBucket: "halw-1cf6e.firebasestorage.app",
+  messagingSenderId: "770946829148",
+  appId: "1:770946829148:web:8732606b52465f3b6e8f99",
+  measurementId: "G-42H9QJ1469"
+};
 
-            <button
-              class="enter-button"
-              onclick="markEntered('${id}')"
-            >
-              ENTROU ✓
-            </button>
+// Edite aqui para adicionar e-mails que devem ver a aba "Administração".
+// Isso é só uma conveniência de interface: no plano Spark, qualquer conta
+// autenticada tem o mesmo nível de acesso ao banco (ver README).
+const ADMIN_EMAILS = ["admin@hellhouse.local"];
 
-          </div>
-        `;
+/* ===================== INIT ===================== */
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getDatabase(app);
+setPersistence(auth, browserLocalPersistence).catch(() => {});
 
-      } else {
+const peopleRef = ref(db, "people");
 
-        return `
-          <div class="person">
+/* ===================== STATE ===================== */
+let currentUser = null;
+let people = {};
+let loaded = false;
+let currentTab = "pending"; // pending | entered | admin
+let searchTerm = "";
+const processing = new Set();
 
-            <div>
-              <div class="person-name">
-                ${escapeHTML(person.name)}
-              </div>
+/* ===================== HELPERS ===================== */
+function normalize(str){
+  return (str || "")
+    .toString()
+    .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .trim()
+    .replace(/\s+/g, " ");
+}
+function escapeHtml(str){
+  return (str ?? "").toString().replace(/[&<>"']/g, c => ({
+    "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+  }[c]));
+}
+function isAdmin(){
+  return !!currentUser && ADMIN_EMAILS.map(e=>e.toLowerCase()).includes((currentUser.email||"").toLowerCase());
+}
+function fmtTime(ms){
+  if(!ms) return "";
+  return new Date(ms).toLocaleTimeString("pt-BR", {hour:"2-digit", minute:"2-digit"});
+}
+function fmtDateTime(ms){
+  if(!ms) return "—";
+  return new Date(ms).toLocaleString("pt-BR");
+}
+function debounce(fn, ms){
+  let t;
+  return (...args) => { clearTimeout(t); t = setTimeout(()=>fn(...args), ms); };
+}
+function showToast(msg, type="ok"){
+  const el = document.createElement("div");
+  el.className = "toast" + (type === "warn" ? " warn" : type === "error" ? " error" : "");
+  el.textContent = msg;
+  document.getElementById("toast-wrap").appendChild(el);
+  setTimeout(()=>{ el.style.transition="opacity .3s"; el.style.opacity="0"; setTimeout(()=>el.remove(), 300); }, 2600);
+}
+function openModal(html){
+  document.getElementById("modal-body").innerHTML = html;
+  document.getElementById("modal-overlay").classList.add("open");
+}
+function closeModal(){
+  document.getElementById("modal-overlay").classList.remove("open");
+  document.getElementById("modal-body").innerHTML = "";
+}
+document.getElementById("modal-overlay").addEventListener("click", (e)=>{
+  if(e.target.id === "modal-overlay") closeModal();
+});
 
-              <div class="person-info">
-                Entrada confirmada
-              </div>
-            </div>
-
-            <button
-              class="undo-button"
-              onclick="markPending('${id}')"
-            >
-              DESFAZER
-            </button>
-
-          </div>
-        `;
-
-      }
-
-    }).join("");
-
+/* ===================== AUTH ===================== */
+document.getElementById("login-form").addEventListener("submit", async (e)=>{
+  e.preventDefault();
+  const email = document.getElementById("login-email").value.trim();
+  const password = document.getElementById("login-password").value;
+  const btn = document.getElementById("login-btn");
+  const errBox = document.getElementById("login-error");
+  errBox.textContent = "";
+  btn.disabled = true; btn.textContent = "ENTRANDO...";
+  try{
+    await signInWithEmailAndPassword(auth, email, password);
+  }catch(err){
+    const map = {
+      "auth/invalid-credential": "E-mail ou senha incorretos.",
+      "auth/invalid-email": "E-mail inválido.",
+      "auth/user-not-found": "Essa conta não existe.",
+      "auth/wrong-password": "Senha incorreta.",
+      "auth/too-many-requests": "Muitas tentativas. Aguarde um pouco e tente de novo."
+    };
+    errBox.textContent = map[err.code] || ("Erro ao entrar: " + err.message);
+  }finally{
+    btn.disabled = false; btn.textContent = "ENTRAR";
   }
+});
 
+document.getElementById("logout-btn").addEventListener("click", ()=> signOut(auth));
 
-  // ==============================
-  // ADICIONAR PESSOA
-  // ==============================
-
-  window.addPerson = async function() {
-
-    const input = document.getElementById("newName");
-
-    const name = input.value.trim();
-
-    if (!name) {
-
-      alert("Digite o nome da pessoa.");
-
-      return;
-
-    }
-
-
-    try {
-
-      const newPerson = push(ref(db, "people"));
-
-      await set(newPerson, {
-
-        name: name,
-        entered: false,
-        ticket: "Ingresso",
-        createdAt: Date.now()
-
-      });
-
-
-      input.value = "";
-
-      document.getElementById("search").value = "";
-
-      changeTab("pending");
-
-    } catch (error) {
-
-      showError("Não foi possível adicionar: " + error.message);
-
-    }
-
-  };
-
-
-  // ==============================
-  // MARCAR COMO ENTROU
-  // ==============================
-
-  window.markEntered = async function(id) {
-
-    try {
-
-      await update(ref(db, "people/" + id), {
-
-        entered: true,
-        enteredAt: Date.now()
-
-      });
-
-    } catch (error) {
-
-      showError("Erro ao marcar entrada: " + error.message);
-
-    }
-
-  };
-
-
-  // ==============================
-  // DESFAZER
-  // ==============================
-
-  window.markPending = async function(id) {
-
-    try {
-
-      await update(ref(db, "people/" + id), {
-
-        entered: false,
-        enteredAt: null
-
-      });
-
-    } catch (error) {
-
-      showError("Erro ao desfazer: " + error.message);
-
-    }
-
-  };
-
-
-  // ==============================
-  // ABAS
-  // ==============================
-
-  window.changeTab = function(tab) {
-
-    currentTab = tab;
-
-    document
-      .getElementById("pendingTab")
-      .classList.toggle("active", tab === "pending");
-
-    document
-      .getElementById("enteredTab")
-      .classList.toggle("active", tab === "entered");
-
+onAuthStateChanged(auth, (user)=>{
+  currentUser = user;
+  if(user){
+    document.getElementById("login-screen").style.display = "none";
+    document.getElementById("app-screen").style.display = "flex";
+    document.getElementById("who-email").textContent = user.email;
+    if(currentTab === "admin" && !isAdmin()) currentTab = "pending";
+    renderTabs();
     render();
+  }else{
+    document.getElementById("app-screen").style.display = "none";
+    document.getElementById("login-screen").style.display = "flex";
+    loaded = false;
+  }
+});
 
-  };
+/* ===================== REALTIME DATA ===================== */
+onValue(peopleRef, (snapshot)=>{
+  people = snapshot.val() || {};
+  loaded = true;
+  render();
+}, (err)=>{
+  showToast("Erro ao carregar dados: " + err.message, "error");
+});
 
+onValue(ref(db, ".info/connected"), (snap)=>{
+  const dot = document.getElementById("conn-dot");
+  if(snap.val() === true) dot.classList.remove("off");
+  else dot.classList.add("off");
+});
 
-  // ==============================
-  // PESQUISA
-  // ==============================
+/* ===================== TABS ===================== */
+function renderTabs(){
+  const tabsEl = document.getElementById("tabs");
+  const items = [
+    {id:"pending", label:"PENDENTES"},
+    {id:"entered", label:"JÁ ENTRARAM"},
+  ];
+  if(isAdmin()) items.push({id:"admin", label:"ADMIN"});
+  tabsEl.innerHTML = items.map(t => `
+    <button class="tab ${currentTab===t.id?'active':''}" data-tab="${t.id}" type="button">${t.label}</button>
+  `).join("");
+  tabsEl.querySelectorAll(".tab").forEach(btn=>{
+    btn.addEventListener("click", ()=>{ currentTab = btn.dataset.tab; renderTabs(); render(); });
+  });
+}
 
-  document
-    .getElementById("search")
-    .addEventListener("input", render);
+document.getElementById("search-input").addEventListener("input", debounce((e)=>{
+  searchTerm = normalize(e.target.value);
+  render();
+}, 100));
 
+/* ===================== RENDER ===================== */
+function getFilteredEntries(){
+  const entries = Object.entries(people);
+  let filtered = entries.filter(([id, p]) => {
+    if(currentTab === "pending") return !p.entered;
+    if(currentTab === "entered") return !!p.entered;
+    return true; // admin
+  });
+  if(searchTerm){
+    filtered = filtered.filter(([id, p]) => (p.normalizedName || normalize(p.name)).includes(searchTerm));
+  }
+  filtered.sort((a,b)=>{
+    if(currentTab === "entered") return (b[1].enteredAt||0) - (a[1].enteredAt||0);
+    return (a[1].name||"").localeCompare(b[1].name||"", "pt-BR");
+  });
+  return filtered;
+}
 
-  document
-    .getElementById("newName")
-    .addEventListener("keydown", (event) => {
+function render(){
+  document.getElementById("count-pending").textContent = Object.values(people).filter(p=>!p.entered).length;
+  document.getElementById("count-entered").textContent = Object.values(people).filter(p=>p.entered).length;
 
-      if (event.key === "Enter") {
+  const listEl = document.getElementById("list");
+  const hintEl = document.getElementById("result-hint");
+  const toolbarSlot = document.getElementById("admin-toolbar-slot");
 
-        addPerson();
+  if(!loaded){
+    listEl.innerHTML = `<div class="empty-state">Carregando lista...</div>`;
+    hintEl.textContent = "";
+    toolbarSlot.innerHTML = "";
+    return;
+  }
 
-      }
+  const entries = getFilteredEntries();
+  const total = Object.keys(people).length;
 
+  if(currentTab === "admin"){
+    const pendingCount = Object.values(people).filter(p=>!p.entered).length;
+    const enteredCount = total - pendingCount;
+    toolbarSlot.innerHTML = `
+      <div class="admin-toolbar">
+        <div class="admin-stats">Total: ${total} · Pendentes: ${pendingCount} · Entraram: ${enteredCount}</div>
+        <button class="btn btn-ghost btn-sm" id="btn-export">Exportar CSV</button>
+      </div>`;
+    document.getElementById("btn-export")?.addEventListener("click", exportCSV);
+  }else{
+    toolbarSlot.innerHTML = "";
+  }
+
+  hintEl.textContent = searchTerm ? `${entries.length} de ${total} pessoa(s)` : "";
+
+  if(entries.length === 0){
+    const msg = currentTab === "pending" ? "Ninguém pendente por aqui."
+      : currentTab === "entered" ? "Ainda ninguém entrou."
+      : "Nenhum registro.";
+    listEl.innerHTML = `<div class="empty-state"><div class="glyph">💀</div>${msg}</div>`;
+    return;
+  }
+
+  listEl.innerHTML = entries.map(([id, p]) => buildCard(id, p)).join("");
+}
+
+function buildCard(id, p){
+  const name = escapeHtml(p.name || "(sem nome)");
+  const ticket = p.ticket ? `<span class="badge badge-ticket">${escapeHtml(p.ticket)}</span>` : "";
+  const busy = processing.has(id);
+
+  if(currentTab === "admin"){
+    const statusBadge = p.entered
+      ? `<span class="badge badge-entered">ENTROU</span>`
+      : `<span class="badge badge-pending">PENDENTE</span>`;
+    return `
+      <div class="card admin-row" data-id="${id}">
+        <div class="card-info">
+          <div class="card-name">${name}</div>
+          <div class="card-meta">${statusBadge}${ticket}
+            <span class="card-time">cad. ${fmtDateTime(p.createdAt)}${p.entered ? " · entrou " + fmtDateTime(p.enteredAt) : ""}</span>
+          </div>
+        </div>
+        <div class="card-actions">
+          <button class="admin-icon-btn" data-action="toggle" data-id="${id}" title="${p.entered?'Marcar pendente':'Marcar entrada'}">${p.entered ? "↺" : "✓"}</button>
+          <button class="admin-icon-btn" data-action="edit" data-id="${id}" title="Editar">✎</button>
+          <button class="admin-icon-btn" data-action="delete" data-id="${id}" title="Excluir">🗑</button>
+        </div>
+      </div>`;
+  }
+
+  if(p.entered){
+    return `
+      <div class="card entered" data-id="${id}">
+        <div class="card-info">
+          <div class="card-name">${name}</div>
+          <div class="card-meta">${ticket}<span class="badge badge-entered">✓ ENTROU ${fmtTime(p.enteredAt)}</span></div>
+        </div>
+        <div class="card-actions">
+          <button class="btn btn-ghost btn-sm" data-action="undo" data-id="${id}" ${busy?'disabled':''}>Desfazer</button>
+        </div>
+      </div>`;
+  }
+
+  return `
+    <div class="card pending" data-id="${id}">
+      <div class="card-info">
+        <div class="card-name">${name}</div>
+        <div class="card-meta">${ticket}</div>
+      </div>
+      <div class="card-actions">
+        <button class="btn btn-blood btn-sm" data-action="enter" data-id="${id}" ${busy?'disabled':''}>Liberar</button>
+      </div>
+    </div>`;
+}
+
+// delegação de eventos (um único listener para toda a lista)
+document.getElementById("list").addEventListener("click", (e)=>{
+  const btn = e.target.closest("[data-action]");
+  if(!btn) return;
+  const id = btn.dataset.id;
+  const action = btn.dataset.action;
+  if(action === "enter") markEntered(id);
+  else if(action === "undo") markPending(id);
+  else if(action === "toggle") people[id]?.entered ? markPending(id) : markEntered(id);
+  else if(action === "edit") openEditModal(id);
+  else if(action === "delete") confirmDelete(id);
+});
+
+/* ===================== AÇÕES DE ENTRADA ===================== */
+async function markEntered(id){
+  if(processing.has(id)) return;
+  processing.add(id);
+  render();
+  try{
+    const result = await runTransaction(ref(db, `people/${id}`), (current)=>{
+      if(!current) return current;         // pessoa não existe mais -> aborta
+      if(current.entered) return;          // já tinha entrado -> aborta (undefined = abort)
+      current.entered = true;
+      current.enteredAt = Date.now();
+      current.enteredBy = currentUser?.email || "desconhecido";
+      return current;
     });
-
-
-  // ==============================
-  // SEGURANÇA CONTRA HTML
-  // ==============================
-
-  function escapeHTML(text) {
-
-    return text
-      .replaceAll("&", "&amp;")
-      .replaceAll("<", "&lt;")
-      .replaceAll(">", "&gt;")
-      .replaceAll('"', "&quot;")
-      .replaceAll("'", "&#039;");
-
+    if(!result.committed){
+      showToast("Essa pessoa já foi liberada por outro aparelho.", "warn");
+    }else{
+      showToast(`${result.snapshot.val()?.name || "Pessoa"} liberado(a) para entrar.`, "ok");
+      processing.delete(id);
+      render();
+      requestAnimationFrame(()=>{
+        const card = document.querySelector(`.card[data-id="${id}"]`);
+        if(card){
+          card.classList.add("just-stamped");
+          setTimeout(()=>card.classList.remove("just-stamped"), 750);
+        }
+      });
+      return;
+    }
+  }catch(err){
+    showToast("Erro ao marcar entrada: " + err.message, "error");
+  }finally{
+    processing.delete(id);
+    render();
   }
+}
 
-
-  // ==============================
-  // ERROS
-  // ==============================
-
-  function showError(message) {
-
-    const error = document.getElementById("error");
-
-    error.textContent = message;
-
-    error.style.display = "block";
-
+async function markPending(id){
+  if(processing.has(id)) return;
+  processing.add(id);
+  render();
+  try{
+    await update(ref(db, `people/${id}`), { entered:false, enteredAt:null, enteredBy:null });
+    showToast("Entrada desfeita.", "ok");
+  }catch(err){
+    showToast("Erro ao desfazer: " + err.message, "error");
+  }finally{
+    processing.delete(id);
+    render();
   }
+}
 
+/* ===================== ADICIONAR PESSOA ===================== */
+document.getElementById("btn-open-add").addEventListener("click", ()=> openAddModal());
+
+function ticketDatalist(){
+  return `
+    <datalist id="ticket-options">
+      <option value="Pista"><option value="VIP"><option value="Camarote">
+      <option value="Cortesia"><option value="Staff">
+    </datalist>`;
+}
+
+function openAddModal(){
+  openModal(`
+    <button class="modal-close" type="button" onclick="window.__closeModal()">✕</button>
+    <h2>Adicionar pessoa</h2>
+    <form id="add-form">
+      <div class="field">
+        <label for="add-name">Nome</label>
+        <input id="add-name" type="text" autocomplete="off" autocapitalize="words" required placeholder="Nome completo">
+      </div>
+      <div class="field">
+        <label for="add-ticket">Ingresso / lote (opcional)</label>
+        <input id="add-ticket" type="text" list="ticket-options" placeholder="Pista, VIP...">
+        ${ticketDatalist()}
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-ghost" onclick="window.__closeModal()">Cancelar</button>
+        <button type="submit" class="btn btn-blood">Cadastrar</button>
+      </div>
+    </form>
+  `);
+  setTimeout(()=>document.getElementById("add-name")?.focus(), 50);
+  document.getElementById("add-form").addEventListener("submit", async (e)=>{
+    e.preventDefault();
+    const name = document.getElementById("add-name").value.trim();
+    const ticket = document.getElementById("add-ticket").value.trim();
+    if(!name) return;
+    await addPerson(name, ticket);
+    closeModal();
+  });
+}
+
+async function addPerson(name, ticket){
+  const dupe = Object.values(people).some(p => normalize(p.name) === normalize(name));
+  const newRef = push(peopleRef);
+  await set(newRef, {
+    name,
+    normalizedName: normalize(name),
+    ticket: ticket || "",
+    entered: false,
+    enteredAt: null,
+    enteredBy: null,
+    createdAt: serverTimestamp(),
+    createdBy: currentUser?.email || "desconhecido"
+  });
+  showToast(dupe ? `${name} cadastrado(a) (já existe outro com nome parecido).` : `${name} cadastrado(a).`, dupe ? "warn" : "ok");
+}
+
+/* ===================== IMPORTAÇÃO EM MASSA ===================== */
+document.getElementById("btn-open-import").addEventListener("click", ()=> openImportModal());
+
+function openImportModal(){
+  openModal(`
+    <button class="modal-close" type="button" onclick="window.__closeModal()">✕</button>
+    <h2>Colar lista de nomes</h2>
+    <p class="hint" style="margin-bottom:10px;">Um nome por linha. Opcional: "Nome, Ingresso" (vírgula ou ponto e vírgula separam o ingresso).</p>
+    <textarea class="field-textarea" id="import-text" placeholder="Maria Silva, VIP&#10;João Souza&#10;Ana Costa, Pista"></textarea>
+    <div class="import-preview" id="import-preview"></div>
+    <div class="modal-actions">
+      <button type="button" class="btn btn-ghost" onclick="window.__closeModal()">Cancelar</button>
+      <button type="button" class="btn btn-blood" id="btn-confirm-import">Importar</button>
+    </div>
+  `);
+  const textEl = document.getElementById("import-text");
+  const preview = document.getElementById("import-preview");
+  textEl.addEventListener("input", ()=>{
+    const n = textEl.value.split(/\r?\n/).map(l=>l.trim()).filter(Boolean).length;
+    preview.textContent = n ? `${n} pessoa(s) serão adicionadas.` : "";
+  });
+  document.getElementById("btn-confirm-import").addEventListener("click", async ()=>{
+    await bulkImport(textEl.value);
+    closeModal();
+  });
+}
+
+async function bulkImport(rawText){
+  const lines = rawText.split(/\r?\n/).map(l=>l.trim()).filter(Boolean);
+  if(!lines.length){ showToast("Cole ao menos um nome.", "error"); return; }
+  const updates = {};
+  let count = 0;
+  lines.forEach(line=>{
+    const parts = line.split(/[,;\t]/).map(p=>p.trim()).filter(Boolean);
+    const name = parts[0];
+    if(!name) return;
+    const ticket = parts[1] || "";
+    const id = push(peopleRef).key;
+    updates[`people/${id}`] = {
+      name,
+      normalizedName: normalize(name),
+      ticket,
+      entered: false,
+      enteredAt: null,
+      enteredBy: null,
+      createdAt: serverTimestamp(),
+      createdBy: currentUser?.email || "desconhecido"
+    };
+    count++;
+  });
+  if(count === 0){ showToast("Nada para importar.", "error"); return; }
+  try{
+    await update(ref(db), updates);
+    showToast(`${count} pessoa(s) importada(s).`, "ok");
+  }catch(err){
+    showToast("Erro ao importar: " + err.message, "error");
+  }
+}
+
+/* ===================== ADMIN: editar / excluir / exportar ===================== */
+function openEditModal(id){
+  const p = people[id];
+  if(!p) return;
+  openModal(`
+    <button class="modal-close" type="button" onclick="window.__closeModal()">✕</button>
+    <h2>Editar pessoa</h2>
+    <form id="edit-form">
+      <div class="field">
+        <label for="edit-name">Nome</label>
+        <input id="edit-name" type="text" value="${escapeHtml(p.name||"")}" required>
+      </div>
+      <div class="field">
+        <label for="edit-ticket">Ingresso / lote</label>
+        <input id="edit-ticket" type="text" list="ticket-options" value="${escapeHtml(p.ticket||"")}">
+        ${ticketDatalist()}
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-ghost" onclick="window.__closeModal()">Cancelar</button>
+        <button type="submit" class="btn btn-blood">Salvar</button>
+      </div>
+    </form>
+  `);
+  document.getElementById("edit-form").addEventListener("submit", async (e)=>{
+    e.preventDefault();
+    const name = document.getElementById("edit-name").value.trim();
+    const ticket = document.getElementById("edit-ticket").value.trim();
+    if(!name) return;
+    await update(ref(db, `people/${id}`), { name, normalizedName: normalize(name), ticket });
+    showToast("Cadastro atualizado.", "ok");
+    closeModal();
+  });
+}
+
+function confirmDelete(id){
+  const p = people[id];
+  if(!p) return;
+  openModal(`
+    <button class="modal-close" type="button" onclick="window.__closeModal()">✕</button>
+    <h2>Excluir pessoa</h2>
+    <p>Tem certeza que quer excluir <strong>${escapeHtml(p.name)}</strong>? Essa ação não pode ser desfeita.</p>
+    <div class="modal-actions">
+      <button type="button" class="btn btn-ghost" onclick="window.__closeModal()">Cancelar</button>
+      <button type="button" class="btn btn-blood" id="btn-confirm-delete">Excluir</button>
+    </div>
+  `);
+  document.getElementById("btn-confirm-delete").addEventListener("click", async ()=>{
+    try{
+      await remove(ref(db, `people/${id}`));
+      showToast("Registro excluído.", "ok");
+    }catch(err){
+      showToast("Erro ao excluir: " + err.message, "error");
+    }
+    closeModal();
+  });
+}
+
+function exportCSV(){
+  const rows = [["Nome","Ingresso","Status","Cadastrado em","Cadastrado por","Entrada em","Marcado por"]];
+  Object.values(people)
+    .sort((a,b)=>(a.name||"").localeCompare(b.name||"", "pt-BR"))
+    .forEach(p=>{
+      rows.push([
+        p.name || "", p.ticket || "", p.entered ? "ENTROU" : "PENDENTE",
+        fmtDateTime(p.createdAt), p.createdBy || "",
+        p.entered ? fmtDateTime(p.enteredAt) : "", p.enteredBy || ""
+      ]);
+    });
+  const csv = rows.map(r => r.map(f => `"${String(f).replace(/"/g,'""')}"`).join(",")).join("\r\n");
+  const blob = new Blob(["\ufeff" + csv], {type:"text/csv;charset=utf-8;"});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `hellhouse-lista-${new Date().toISOString().slice(0,10)}.csv`;
+  document.body.appendChild(a); a.click(); a.remove();
+  URL.revokeObjectURL(url);
+}
+
+/* expõe fechar modal pro onclick inline */
+window.__closeModal = closeModal;
 </script>
-
 </body>
 </html>
