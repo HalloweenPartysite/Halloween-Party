@@ -346,13 +346,16 @@ const bootTimeout = setTimeout(()=>{
   if(!(authReady && loaded)){
     showStuck("Demorando pra conectar... verifique sua internet ou toque em recarregar.");
   }
-}, 8000);
+}, 6000);
 
 // Guarda a sessão anônima no navegador antes de logar, pra reaproveitar o
 // signInAnonymously e não criar uma conta nova a cada refresh — a sessão
 // fica salva no navegador (localStorage) e é reaproveitada nos acessos seguintes.
-setPersistence(auth, browserLocalPersistence)
-  .catch(()=>{ /* se falhar (ex: aba anônima do navegador), segue sem persistir */ })
+Promise.race([
+  setPersistence(auth, browserLocalPersistence),
+  new Promise(resolve => setTimeout(resolve, 2500))
+])
+  .catch(()=>{})
   .finally(()=>{
     signInAnonymously(auth).catch((err) => {
       clearTimeout(bootTimeout);
@@ -540,6 +543,8 @@ document.getElementById("backup-file-input").addEventListener("change", async (e
 
 /* ===================== STATE ===================== */
 let currentUser = null;
+let adminUnlocked = true;
+let emptyWarningShown = false;
 let people = {};
 let loaded = false;
 let currentTab = "pending"; // pending | entered | admin
@@ -561,7 +566,7 @@ function escapeHtml(str){
   }[c]));
 }
 function isAdmin(){
-  return adminUnlocked === true;
+  return true;
 }
 function requireAdmin(){ return true; }
 function showAdminUnlock(){
