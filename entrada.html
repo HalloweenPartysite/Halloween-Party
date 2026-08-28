@@ -272,25 +272,28 @@
   </main>
 
   <div class="fab-row">
+    <button class="fab secondary" id="btn-open-backup" type="button">💾 Backup</button>
     <button class="fab secondary" id="btn-open-import" type="button">📋 Colar lista</button>
     <button class="fab" id="btn-open-add" type="button">+ Adicionar</button>
   </div>
 </div>
 
 <div id="modal-overlay"><div class="modal" id="modal-body"></div></div>
+<input id="backup-file-input" type="file" accept=".json,application/json" style="display:none;">
 <div id="toast-wrap"></div>
 
 <div class="loading-overlay" id="loading-overlay">
   <div class="loading-box">
-    <div class="spinner"></div>
+    <div class="spinner" id="loading-spinner"></div>
     <div class="loading-msg" id="loading-msg">Confirmando...</div>
+    <button class="btn btn-blood btn-sm" id="loading-retry-btn" type="button" style="display:none;">Recarregar página</button>
   </div>
 </div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
 import {
-  getAuth, onAuthStateChanged, signInAnonymously
+  getAuth, onAuthStateChanged, signInAnonymously, setPersistence, browserLocalPersistence
 } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
 import {
   getDatabase, ref, push, set, update, remove, onValue, get, runTransaction, serverTimestamp
@@ -328,18 +331,211 @@ let authReady = false;
 // silenciosamente com erro de permissão).
 showLoading("Conectando...");
 function maybeHideBootLoading(){
-  if(authReady && loaded) hideLoading();
+  if(authReady && loaded){
+    clearTimeout(bootTimeout);
+    hideLoading();
+  }
 }
+// IMPORTANTE: este timer só pode ser cancelado quando o app estiver
+// REALMENTE pronto (auth + dados). Antes, ele era cancelado assim que o
+// login anônimo terminava, mesmo que a lista de pessoas nunca chegasse —
+// nesse caso a tela de carregamento ficava girando pra sempre, sem aviso
+// e sem botão de recarregar. Agora qualquer trava (auth OU dados) aciona
+// o aviso, e só é cancelado dentro de maybeHideBootLoading().
 const bootTimeout = setTimeout(()=>{
-  if(!authReady){
-    showLoading("Demorando pra conectar... verifique sua internet ou recarregue a página.");
+  if(!(authReady && loaded)){
+    showStuck("Demorando pra conectar... verifique sua internet ou toque em recarregar.");
   }
 }, 8000);
 
-signInAnonymously(auth).catch((err) => {
-  clearTimeout(bootTimeout);
-  showLoading("Não foi possível conectar. Verifique a internet e recarregue a página.");
-  showToast("Erro ao conectar: " + err.message, "error");
+// Guarda a sessão anônima no navegador antes de logar, pra reaproveitar o
+// signInAnonymously e não criar uma conta nova a cada refresh — a sessão
+// fica salva no navegador (localStorage) e é reaproveitada nos acessos seguintes.
+setPersistence(auth, browserLocalPersistence)
+  .catch(()=>{ /* se falhar (ex: aba anônima do navegador), segue sem persistir */ })
+  .finally(()=>{
+    signInAnonymously(auth).catch((err) => {
+      clearTimeout(bootTimeout);
+      showStuck("Não foi possível conectar. Verifique a internet e toque em recarregar.");
+      showToast("Erro ao conectar: " + err.message, "error");
+    });
+  });
+
+/* ===================== BACKUP ===================== */
+// O backup local fica salvo automaticamente neste celular/navegador.
+// Também existe uma cópia no Firebase em /backup_latest.
+// IMPORTANTE: o backup local é a proteção contra uma perda total do Firebase.
+const LOCAL_BACKUP_KEY = "hellhouse_backup_v1";
+const LOCAL_BACKUP_META_KEY = "hellhouse_backup_meta_v1";
+
+function makeBackupPayload(data = people){
+  return {
+    version: 1,
+    app: "HELLHOUSE",
+    savedAt: Date.now(),
+    people: data || {}
+  };
+}
+
+function saveLocalBackup(data = people, silent = true){
+  try{
+    const payload = makeBackupPayload(data);
+    localStorage.setItem(LOCAL_BACKUP_KEY, JSON.stringify(payload));
+    localStorage.setItem(LOCAL_BACKUP_META_KEY, JSON.stringify({
+      savedAt: payload.savedAt,
+      count: Object.keys(payload.people || {}).length
+    }));
+    return true;
+  }catch(err){
+    if(!silent) showToast("Não consegui salvar o backup neste celular.", "error");
+    return false;
+  }
+}
+
+function getLocalBackup(){
+  try{
+    const raw = localStorage.getItem(LOCAL_BACKUP_KEY);
+    if(!raw) return null;
+    const payload = JSON.parse(raw);
+    if(!payload || payload.app !== "HELLHOUSE" || !payload.people) return null;
+    return payload;
+  }catch(_){ return null; }
+}
+
+async function saveCloudBackup(data = people){
+  // Guarda uma cópia separada dentro do próprio Firebase.
+  // Não substitui o backup do celular: se o banco inteiro for apagado,
+  // esta cópia também poderá ser perdida.
+  if(!authReady) return false;
+  try{
+    await set(ref(db, "backup_latest"), makeBackupPayload(data));
+    return true;
+  }catch(_){
+    return false;
+  }
+}
+
+function formatBackupDate(ms){
+  return ms ? new Date(ms).toLocaleString("pt-BR") : "—";
+}
+
+function downloadBackup(){
+  const payload = makeBackupPayload(people);
+  const blob = new Blob([JSON.stringify(payload, null, 2)], {type:"application/json;charset=utf-8"});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  const date = new Date().toISOString().slice(0,10);
+  a.href = url;
+  a.download = `HELLHOUSE-BACKUP-${date}.json`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+  saveLocalBackup(people);
+  showToast("Backup salvo no celular.", "ok");
+}
+
+function openBackupModal(){
+  const local = getLocalBackup();
+  const localCount = local ? Object.keys(local.people || {}).length : 0;
+  openModal(`
+    <button class="modal-close" type="button" onclick="window.__closeModal()">✕</button>
+    <h2>Backup da lista</h2>
+    <p class="hint" style="margin-bottom:14px;">
+      A lista já é salva automaticamente neste celular. Para ter uma cópia que pode ser guardada em outro lugar, toque em <strong>Salvar backup no celular</strong>.
+    </p>
+    <div style="display:flex;flex-direction:column;gap:10px;">
+      <button type="button" class="btn btn-blood btn-block" id="btn-save-backup">💾 Salvar backup no celular</button>
+      <button type="button" class="btn btn-ghost btn-block" id="btn-restore-local">↩ Restaurar último backup deste celular</button>
+      <button type="button" class="btn btn-ghost btn-block" id="btn-choose-backup">📂 Restaurar arquivo de backup</button>
+    </div>
+    <p class="import-preview" style="margin-top:14px;">
+      Backup automático neste aparelho: ${local ? `sim · ${localCount} pessoa(s) · ${formatBackupDate(local.savedAt)}` : "ainda não criado"}
+    </p>
+    <p class="import-preview">
+      Dica: antes da festa, salve o arquivo de backup e mande para seu WhatsApp/Google Drive. Assim você terá uma cópia fora do celular.
+    </p>
+  `);
+
+  document.getElementById("btn-save-backup")?.addEventListener("click", downloadBackup);
+
+  document.getElementById("btn-restore-local")?.addEventListener("click", async ()=>{
+    const backup = getLocalBackup();
+    if(!backup){
+      showToast("Não existe backup neste celular.", "warn");
+      return;
+    }
+    await restoreBackupPayload(backup);
+  });
+
+  document.getElementById("btn-choose-backup")?.addEventListener("click", ()=>{
+    closeModal();
+    document.getElementById("backup-file-input")?.click();
+  });
+}
+
+async function restoreBackupPayload(payload){
+  if(!requireAdmin()) return;
+  const backupPeople = payload?.people;
+  if(!backupPeople || typeof backupPeople !== "object"){
+    showToast("Arquivo de backup inválido.", "error");
+    return;
+  }
+
+  const count = Object.keys(backupPeople).length;
+  if(!count){
+    showToast("Esse backup está vazio. Nada foi restaurado.", "warn");
+    return;
+  }
+
+  const ok = confirm(
+    `Restaurar ${count} pessoa(s) deste backup?\n\n` +
+    `Isso vai substituir a lista atual no Firebase.`
+  );
+  if(!ok) return;
+
+  if(!authReady){
+    showToast("Ainda conectando. Aguarde um instante.", "warn");
+    return;
+  }
+
+  showLoading("Salvando segurança antes da restauração...");
+  try{
+    if(Object.keys(people || {}).length > 0){
+      saveLocalBackup(people, false);
+      await saveCloudBackup(people);
+    }
+    showLoading("Restaurando backup...");
+    // Substitui somente o nó people. O backup em si não é apagado.
+    await set(peopleRef, backupPeople);
+    const check = await get(peopleRef);
+    if(!check.exists()){
+      showToast("Não consegui confirmar a restauração.", "error");
+      return;
+    }
+    saveLocalBackup(backupPeople);
+    showToast(`Backup restaurado: ${count} pessoa(s).`, "ok");
+  }catch(err){
+    showToast("Erro ao restaurar: " + err.message, "error");
+  }finally{
+    hideLoading();
+    closeModal();
+  }
+}
+
+document.getElementById("btn-open-backup").addEventListener("click", openBackupModal);
+
+document.getElementById("backup-file-input").addEventListener("change", async (e)=>{
+  const file = e.target.files?.[0];
+  e.target.value = "";
+  if(!file) return;
+  try{
+    const text = await file.text();
+    const payload = JSON.parse(text);
+    await restoreBackupPayload(payload);
+  }catch(err){
+    showToast("Não consegui abrir esse backup.", "error");
+  }
 });
 
 /* ===================== STATE ===================== */
@@ -365,9 +561,38 @@ function escapeHtml(str){
   }[c]));
 }
 function isAdmin(){
-  // Sem login não há como distinguir usuários, então a área admin fica
-  // liberada para qualquer pessoa que tenha o link.
-  return true;
+  return adminUnlocked === true;
+}
+function requireAdmin(){ return true; }
+function showAdminUnlock(){
+  openModal(`
+    <button class="modal-close" type="button" onclick="window.__closeModal()">✕</button>
+    <h2>Acesso administrativo</h2>
+    <p class="hint" style="margin-bottom:14px;">Digite o PIN para abrir as funções de administrador.</p>
+    <form id="admin-pin-form">
+      <div class="field">
+        <label for="admin-pin">PIN</label>
+        <input id="admin-pin" type="password" inputmode="numeric" autocomplete="off" maxlength="12" required placeholder="PIN administrativo">
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-ghost" onclick="window.__closeModal()">Cancelar</button>
+        <button type="submit" class="btn btn-blood">Entrar</button>
+      </div>
+    </form>
+  `);
+  setTimeout(()=>document.getElementById("admin-pin")?.focus(), 50);
+  document.getElementById("admin-pin-form")?.addEventListener("submit", (e)=>{
+    e.preventDefault();
+    const pin = document.getElementById("admin-pin")?.value || "";
+    
+    adminUnlocked = true;
+    sessionStorage.setItem("hellhouse_admin_unlocked", "1");
+    currentTab = "admin";
+    closeModal();
+    renderTabs();
+    render();
+    showToast("Modo administrador ativado.", "ok");
+  });
 }
 function fmtTime(ms){
   if(!ms) return "";
@@ -390,10 +615,26 @@ function showToast(msg, type="ok"){
 }
 function showLoading(msg){
   document.getElementById("loading-msg").textContent = msg;
+  document.getElementById("loading-spinner").style.display = "";
+  document.getElementById("loading-retry-btn").style.display = "none";
   document.getElementById("loading-overlay").classList.add("open");
 }
 function hideLoading(){
   document.getElementById("loading-overlay").classList.remove("open");
+  // some qualquer estado de "travado" que tenha ficado ligado
+  document.getElementById("loading-retry-btn").style.display = "none";
+  document.getElementById("loading-spinner").style.display = "";
+}
+// Usado só na tela de boot (antes do app liberar o uso): se conectar ou
+// carregar os dados falhar/demorar demais, mostra um botão pra recarregar
+// em vez de deixar a tela de carregamento girando pra sempre sem saída.
+function showStuck(msg){
+  document.getElementById("loading-msg").textContent = msg;
+  document.getElementById("loading-spinner").style.display = "none";
+  const retryBtn = document.getElementById("loading-retry-btn");
+  retryBtn.style.display = "";
+  retryBtn.onclick = ()=> location.reload();
+  document.getElementById("loading-overlay").classList.add("open");
 }
 function openModal(html){
   document.getElementById("modal-body").innerHTML = html;
@@ -411,20 +652,40 @@ document.getElementById("modal-overlay").addEventListener("click", (e)=>{
 onAuthStateChanged(auth, (user)=>{
   currentUser = user;
   authReady = !!user;
-  clearTimeout(bootTimeout);
   maybeHideBootLoading();
   renderTabs();
   render();
 });
 
 /* ===================== REALTIME DATA ===================== */
+let cloudBackupTimer = null;
 onValue(peopleRef, (snapshot)=>{
   people = snapshot.val() || {};
   loaded = true;
+
+  // Proteção contra perda: mantém a última lista conhecida neste aparelho.
+  // Se o Firebase voltar vazio, não sobrescrevemos o backup local.
+  if(Object.keys(people).length > 0){
+    saveLocalBackup(people);
+    emptyWarningShown = false;
+    clearTimeout(cloudBackupTimer);
+    cloudBackupTimer = setTimeout(()=>saveCloudBackup(people), 500);
+  }else if(getLocalBackup() && !emptyWarningShown){
+    // Não restaura sozinho: apenas avisa para evitar uma restauração errada.
+    emptyWarningShown = true;
+    showToast("⚠️ O banco está vazio. Há um backup salvo neste celular.", "warn");
+  }
+
   maybeHideBootLoading();
   render();
 }, (err)=>{
   showToast("Erro ao carregar dados: " + err.message, "error");
+  // Se a lista nunca tiver carregado (ex: permissão negada no banco), não
+  // deixa a tela de carregamento girando pra sempre sem explicação.
+  if(!loaded){
+    clearTimeout(bootTimeout);
+    showStuck("Não foi possível carregar a lista. Toque em recarregar ou avise o suporte.");
+  }
 });
 
 onValue(ref(db, ".info/connected"), (snap)=>{
@@ -440,12 +701,21 @@ function renderTabs(){
     {id:"pending", label:"PENDENTES"},
     {id:"entered", label:"JÁ ENTRARAM"},
   ];
-  if(isAdmin()) items.push({id:"admin", label:"ADMIN"});
+  items.push({id:"admin", label:isAdmin() ? "ADMIN" : "🔒 ADMIN"});
   tabsEl.innerHTML = items.map(t => `
     <button class="tab ${currentTab===t.id?'active':''}" data-tab="${t.id}" type="button">${t.label}</button>
   `).join("");
   tabsEl.querySelectorAll(".tab").forEach(btn=>{
-    btn.addEventListener("click", ()=>{ currentTab = btn.dataset.tab; renderTabs(); render(); });
+    btn.addEventListener("click", ()=>{
+      const tab = btn.dataset.tab;
+      if(tab === "admin" && !isAdmin()){
+        showAdminUnlock();
+        return;
+      }
+      currentTab = tab;
+      renderTabs();
+      render();
+    });
   });
 }
 
@@ -473,6 +743,7 @@ function getFilteredEntries(){
 }
 
 function render(){
+  if(currentTab === "admin" && !isAdmin()) currentTab = "pending";
   document.getElementById("count-pending").textContent = Object.values(people).filter(p=>!p.entered).length;
   document.getElementById("count-entered").textContent = Object.values(people).filter(p=>p.entered).length;
 
@@ -496,9 +767,22 @@ function render(){
     toolbarSlot.innerHTML = `
       <div class="admin-toolbar">
         <div class="admin-stats">Total: ${total} · Pendentes: ${pendingCount} · Entraram: ${enteredCount}</div>
-        <button class="btn btn-ghost btn-sm" id="btn-export">Exportar CSV</button>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;">
+          <button class="btn btn-ghost btn-sm" id="btn-backup-admin">💾 Backup</button>
+          <button class="btn btn-ghost btn-sm" id="btn-export">Exportar CSV</button>
+           <button class="btn btn-ghost btn-sm" id="btn-lock-admin">🔒 Bloquear</button>
+        </div>
       </div>`;
     document.getElementById("btn-export")?.addEventListener("click", exportCSV);
+    document.getElementById("btn-backup-admin")?.addEventListener("click", openBackupModal);
+    document.getElementById("btn-lock-admin")?.addEventListener("click", ()=>{
+      adminUnlocked = false;
+      sessionStorage.removeItem("hellhouse_admin_unlocked");
+      currentTab = "pending";
+      renderTabs();
+      render();
+      showToast("Modo administrador bloqueado.", "ok");
+    });
   }else{
     toolbarSlot.innerHTML = "";
   }
@@ -574,7 +858,7 @@ document.getElementById("list").addEventListener("click", (e)=>{
   const action = btn.dataset.action;
   if(action === "enter") markEntered(id);
   else if(action === "undo") markPending(id);
-  else if(action === "toggle") people[id]?.entered ? markPending(id) : markEntered(id);
+  else if(action === "toggle") { if(!requireAdmin()) return; people[id]?.entered ? markPending(id) : markEntered(id); }
   else if(action === "edit") openEditModal(id);
   else if(action === "delete") confirmDelete(id);
 });
@@ -715,22 +999,27 @@ function openAddModal(){
   setTimeout(()=>document.getElementById("add-name")?.focus(), 50);
   document.getElementById("add-form").addEventListener("submit", async (e)=>{
     e.preventDefault();
+    const submitBtn = e.target.querySelector('button[type="submit"]');
+    if(submitBtn?.disabled) return;
+    if(submitBtn) submitBtn.disabled = true;
     const name = document.getElementById("add-name").value.trim();
     const ticket = document.getElementById("add-ticket").value.trim();
-    if(!name) return;
-    await addPerson(name, ticket);
-    closeModal();
+    if(!name){ if(submitBtn) submitBtn.disabled = false; return; }
+    const ok = await addPerson(name, ticket);
+    if(ok) closeModal();
   });
 }
 
 async function addPerson(name, ticket){
   if(!authReady){
     showToast("Ainda conectando... aguarde um instante e tente de novo.", "warn");
-    return;
+    return false;
   }
   showLoading(`Cadastrando ${name}...`);
   try{
-    const dupe = Object.values(people).some(p => normalize(p.name) === normalize(name));
+    const latest = await get(peopleRef);
+    const latestPeople = latest.val() || {};
+    const dupe = Object.values(latestPeople).some(p => normalize(p.name) === normalize(name));
     const newRef = push(peopleRef);
     await set(newRef, {
       name,
@@ -747,12 +1036,14 @@ async function addPerson(name, ticket){
     const check = await get(newRef);
     if(!check.exists()){
       showToast("Não deu pra confirmar o cadastro. Tente de novo.", "error");
-      return;
+      return false;
     }
 
     showToast(dupe ? `${name} cadastrado(a) (já existe outro com nome parecido).` : `${name} cadastrado(a).`, dupe ? "warn" : "ok");
+    return true;
   }catch(err){
     showToast("Erro ao cadastrar: " + err.message, "error");
+    return false;
   }finally{
     hideLoading();
   }
@@ -761,11 +1052,59 @@ async function addPerson(name, ticket){
 /* ===================== IMPORTAÇÃO EM MASSA ===================== */
 document.getElementById("btn-open-import").addEventListener("click", ()=> openImportModal());
 
+// Analisa o texto colado: separa quem entra de fato, quem é repetido
+// (já cadastrado ou repetido dentro da própria lista colada) e linhas
+// estranhas (sem nenhuma letra, ou nome curto demais pra ser um nome).
+function analyzeImport(rawText){
+  const lines = rawText.split(/\r?\n/).map(l=>l.trim()).filter(Boolean);
+  const existingNormalized = new Set(Object.values(people).map(p => p.normalizedName || normalize(p.name)));
+  const seenInPaste = new Set();
+  const toImport = [];
+  let duplicatesExisting = 0;
+  let duplicatesInPaste = 0;
+  let weird = 0;
+
+  lines.forEach(line=>{
+    const parts = line.split(/[,;\t]/).map(p=>p.trim()).filter(Boolean);
+    const name = parts[0];
+    if(!name) return;
+    const ticket = parts[1] || "";
+    const norm = normalize(name);
+    const hasLetter = /[a-zà-ÿ]/i.test(name);
+
+    if(!hasLetter || name.length < 2){
+      weird++;
+      return;
+    }
+    if(existingNormalized.has(norm)){
+      duplicatesExisting++;
+      return;
+    }
+    if(seenInPaste.has(norm)){
+      duplicatesInPaste++;
+      return;
+    }
+    seenInPaste.add(norm);
+    toImport.push({name, ticket});
+  });
+
+  return { totalLines: lines.length, toImport, duplicatesExisting, duplicatesInPaste, weird };
+}
+
+function describeAnalysis(a){
+  if(!a.totalLines) return "";
+  const parts = [`${a.toImport.length} pessoa(s) serão adicionadas`];
+  if(a.duplicatesExisting) parts.push(`${a.duplicatesExisting} já cadastrada(s) (ignorada${a.duplicatesExisting>1?'s':''})`);
+  if(a.duplicatesInPaste) parts.push(`${a.duplicatesInPaste} repetida(s) na lista colada (ignorada${a.duplicatesInPaste>1?'s':''})`);
+  if(a.weird) parts.push(`${a.weird} linha(s) estranha(s) (ignorada${a.weird>1?'s':''})`);
+  return parts.join(" · ");
+}
+
 function openImportModal(){
   openModal(`
     <button class="modal-close" type="button" onclick="window.__closeModal()">✕</button>
     <h2>Colar lista de nomes</h2>
-    <p class="hint" style="margin-bottom:10px;">Um nome por linha. Opcional: "Nome, Ingresso" (vírgula ou ponto e vírgula separam o ingresso).</p>
+    <p class="hint" style="margin-bottom:10px;">Um nome por linha. Opcional: "Nome, Ingresso" (vírgula ou ponto e vírgula separam o ingresso). Nomes repetidos ou linhas estranhas são ignorados automaticamente.</p>
     <textarea class="field-textarea" id="import-text" placeholder="Maria Silva, VIP&#10;João Souza&#10;Ana Costa, Pista"></textarea>
     <div class="import-preview" id="import-preview"></div>
     <div class="modal-actions">
@@ -776,56 +1115,86 @@ function openImportModal(){
   const textEl = document.getElementById("import-text");
   const preview = document.getElementById("import-preview");
   textEl.addEventListener("input", ()=>{
-    const n = textEl.value.split(/\r?\n/).map(l=>l.trim()).filter(Boolean).length;
-    preview.textContent = n ? `${n} pessoa(s) serão adicionadas.` : "";
+    preview.textContent = describeAnalysis(analyzeImport(textEl.value));
   });
-  document.getElementById("btn-confirm-import").addEventListener("click", async ()=>{
-    await bulkImport(textEl.value);
-    closeModal();
+  const confirmBtn = document.getElementById("btn-confirm-import");
+  confirmBtn.addEventListener("click", async ()=>{
+    if(confirmBtn.disabled) return;
+    confirmBtn.disabled = true;
+    const ok = await bulkImport(textEl.value);
+    if(ok) closeModal();
   });
 }
 
+let importInFlight = false;
 async function bulkImport(rawText){
+  if(importInFlight) return; // trava contra clique duplo / duplo-toque no botão
   if(!authReady){
     showToast("Ainda conectando... aguarde um instante e tente de novo.", "warn");
     return;
   }
-  const lines = rawText.split(/\r?\n/).map(l=>l.trim()).filter(Boolean);
-  if(!lines.length){ showToast("Cole ao menos um nome.", "error"); return; }
+  // IMPORTANTE: usa exatamente a mesma análise que gera a prévia (analyzeImport),
+  // em vez de reprocessar o texto do zero. Antes disso, esta função ignorava
+  // a checagem de duplicados/linhas estranhas mostrada na prévia e importava
+  // TUDO, inclusive nomes repetidos e lixo — agora os dois ficam sempre iguais.
+  const analysis = analyzeImport(rawText);
+  if(!analysis.totalLines){ showToast("Cole ao menos um nome.", "error"); return false; }
+  if(analysis.toImport.length === 0){
+    showToast("Nada novo para importar (tudo já cadastrado, repetido ou inválido).", "warn");
+    return false;
+  }
+
+  importInFlight = true;
+  const confirmBtn = document.getElementById("btn-confirm-import");
+  if(confirmBtn) confirmBtn.disabled = true;
+
   const updates = {};
-  let count = 0;
-  lines.forEach(line=>{
-    const parts = line.split(/[,;\t]/).map(p=>p.trim()).filter(Boolean);
-    const name = parts[0];
-    if(!name) return;
-    const ticket = parts[1] || "";
+  analysis.toImport.forEach(({name, ticket})=>{
     const id = push(peopleRef).key;
     updates[`people/${id}`] = {
       name,
       normalizedName: normalize(name),
-      ticket,
+      ticket: ticket || "",
       entered: false,
       enteredAt: null,
       enteredBy: null,
       createdAt: serverTimestamp(),
       createdBy: currentUser?.uid || "desconhecido"
     };
-    count++;
   });
-  if(count === 0){ showToast("Nada para importar.", "error"); return; }
-  showLoading(`Importando ${count} pessoa(s)...`);
+
+  showLoading(`Importando ${analysis.toImport.length} pessoa(s)...`);
   try{
     await update(ref(db), updates);
-    showToast(`${count} pessoa(s) importada(s).`, "ok");
+
+    // Confirmação extra: relê ao menos um dos registros gravados pra ter
+    // certeza de que a importação realmente foi salva no servidor.
+    showLoading("Verificando no servidor...");
+    const sampleId = Object.keys(updates)[0].split("/")[1];
+    const check = await get(ref(db, `people/${sampleId}`));
+    if(!check.exists()){
+      showToast("Não deu pra confirmar a importação. Confira a lista e tente de novo.", "error");
+      return false;
+    }
+
+    let msg = `${analysis.toImport.length} pessoa(s) importada(s).`;
+    const skipped = analysis.duplicatesExisting + analysis.duplicatesInPaste + analysis.weird;
+    if(skipped) msg += ` ${skipped} linha(s) ignorada(s) (repetida ou inválida).`;
+    showToast(msg, "ok");
+    return true;
   }catch(err){
     showToast("Erro ao importar: " + err.message, "error");
+    return false;
   }finally{
+    importInFlight = false;
+    if(confirmBtn) confirmBtn.disabled = false;
     hideLoading();
   }
 }
 
 /* ===================== ADMIN: editar / excluir / exportar ===================== */
 function openEditModal(id){
+  if(!requireAdmin()) return;
   const p = people[id];
   if(!p) return;
   openModal(`
@@ -849,6 +1218,8 @@ function openEditModal(id){
   `);
   document.getElementById("edit-form").addEventListener("submit", async (e)=>{
     e.preventDefault();
+    const submitBtn = e.target.querySelector('button[type="submit"]');
+    if(submitBtn?.disabled) return;
     if(!authReady){
       showToast("Ainda conectando... aguarde um instante e tente de novo.", "warn");
       return;
@@ -856,6 +1227,7 @@ function openEditModal(id){
     const name = document.getElementById("edit-name").value.trim();
     const ticket = document.getElementById("edit-ticket").value.trim();
     if(!name) return;
+    if(submitBtn) submitBtn.disabled = true;
     showLoading(`Salvando ${name}...`);
     try{
       const existing = await get(ref(db, `people/${id}`));
@@ -875,6 +1247,7 @@ function openEditModal(id){
 }
 
 function confirmDelete(id){
+  if(!requireAdmin()) return;
   const p = people[id];
   if(!p) return;
   openModal(`
@@ -886,13 +1259,18 @@ function confirmDelete(id){
       <button type="button" class="btn btn-blood" id="btn-confirm-delete">Excluir</button>
     </div>
   `);
-  document.getElementById("btn-confirm-delete").addEventListener("click", async ()=>{
+  const confirmBtn = document.getElementById("btn-confirm-delete");
+  confirmBtn.addEventListener("click", async ()=>{
+    if(confirmBtn.disabled) return;
     if(!authReady){
       showToast("Ainda conectando... aguarde um instante e tente de novo.", "warn");
       return;
     }
+    confirmBtn.disabled = true;
     showLoading(`Excluindo ${p.name}...`);
     try{
+      saveLocalBackup(people, false);
+      await saveCloudBackup(people);
       await remove(ref(db, `people/${id}`));
       showToast("Registro excluído.", "ok");
     }catch(err){
@@ -905,6 +1283,7 @@ function confirmDelete(id){
 }
 
 function exportCSV(){
+  if(!requireAdmin()) return;
   const rows = [["Nome","Ingresso","Status","Cadastrado em","Entrada em"]];
   Object.values(people)
     .sort((a,b)=>(a.name||"").localeCompare(b.name||"", "pt-BR"))
