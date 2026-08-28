@@ -320,7 +320,25 @@ const peopleRef = ref(db, "people");
 // "auth != null" (plano Spark), mas ninguém precisa digitar e-mail/senha.
 // Com isso, também não há mais distinção de "admin": a aba Admin fica
 // sempre visível para qualquer pessoa que abrir a página.
+let authReady = false;
+
+// Mostra a tela de carregamento já no início e só libera o app quando o
+// login anônimo E os dados já tiverem chegado — evita que alguém consiga
+// clicar em algo antes da conexão estar pronta (o que antes podia falhar
+// silenciosamente com erro de permissão).
+showLoading("Conectando...");
+function maybeHideBootLoading(){
+  if(authReady && loaded) hideLoading();
+}
+const bootTimeout = setTimeout(()=>{
+  if(!authReady){
+    showLoading("Demorando pra conectar... verifique sua internet ou recarregue a página.");
+  }
+}, 8000);
+
 signInAnonymously(auth).catch((err) => {
+  clearTimeout(bootTimeout);
+  showLoading("Não foi possível conectar. Verifique a internet e recarregue a página.");
   showToast("Erro ao conectar: " + err.message, "error");
 });
 
@@ -392,6 +410,9 @@ document.getElementById("modal-overlay").addEventListener("click", (e)=>{
 /* ===================== AUTH (anônimo, sem tela de login) ===================== */
 onAuthStateChanged(auth, (user)=>{
   currentUser = user;
+  authReady = !!user;
+  clearTimeout(bootTimeout);
+  maybeHideBootLoading();
   renderTabs();
   render();
 });
@@ -400,6 +421,7 @@ onAuthStateChanged(auth, (user)=>{
 onValue(peopleRef, (snapshot)=>{
   people = snapshot.val() || {};
   loaded = true;
+  maybeHideBootLoading();
   render();
 }, (err)=>{
   showToast("Erro ao carregar dados: " + err.message, "error");
@@ -564,10 +586,15 @@ document.getElementById("list").addEventListener("click", (e)=>{
 // como feita sem ter certeza (mesmo que a internet do local esteja ruim).
 async function markEntered(id){
   if(processing.has(id)) return;
+  if(!authReady){
+    showToast("Ainda conectando... aguarde um instante e tente de novo.", "warn");
+    return;
+  }
   processing.add(id);
   const person = people[id];
   showLoading(`Marcando entrada${person?.name ? " de " + person.name : ""}...`);
   render();
+  let stamped = false;
   try{
     const result = await runTransaction(ref(db, `people/${id}`), (current)=>{
       if(!current) return current;         // pessoa não existe mais -> aborta
@@ -579,7 +606,11 @@ async function markEntered(id){
     });
 
     if(!result.committed){
-      showToast("Essa pessoa já foi liberada por outro aparelho.", "warn");
+      if(!result.snapshot.exists()){
+        showToast("Esse cadastro não existe mais.", "error");
+      }else{
+        showToast("Essa pessoa já foi liberada por outro aparelho.", "warn");
+      }
       return;
     }
 
@@ -593,33 +624,45 @@ async function markEntered(id){
     }
 
     showToast(`${result.snapshot.val()?.name || "Pessoa"} liberado(a) para entrar.`, "ok");
-    hideLoading();
-    processing.delete(id);
-    render();
-    requestAnimationFrame(()=>{
-      const card = document.querySelector(`.card[data-id="${id}"]`);
-      if(card){
-        card.classList.add("just-stamped");
-        setTimeout(()=>card.classList.remove("just-stamped"), 750);
-      }
-    });
-    return;
+    stamped = true;
   }catch(err){
     showToast("Erro ao marcar entrada: " + err.message, "error");
   }finally{
     processing.delete(id);
     hideLoading();
     render();
+    if(stamped){
+      requestAnimationFrame(()=>{
+        const card = document.querySelector(`.card[data-id="${id}"]`);
+        if(card){
+          card.classList.add("just-stamped");
+          setTimeout(()=>card.classList.remove("just-stamped"), 750);
+        }
+      });
+    }
   }
 }
 
 async function markPending(id){
   if(processing.has(id)) return;
+  if(!authReady){
+    showToast("Ainda conectando... aguarde um instante e tente de novo.", "warn");
+    return;
+  }
   processing.add(id);
   const person = people[id];
   showLoading(`Desfazendo entrada${person?.name ? " de " + person.name : ""}...`);
   render();
   try{
+    // Confere se o registro ainda existe antes de escrever — sem isso, um
+    // update() em um caminho apagado por outro aparelho recriaria um
+    // registro "fantasma" só com os campos de entrada, sem nome/ingresso.
+    const existing = await get(ref(db, `people/${id}`));
+    if(!existing.exists()){
+      showToast("Esse cadastro não existe mais.", "error");
+      return;
+    }
+
     await update(ref(db, `people/${id}`), { entered:false, enteredAt:null, enteredBy:null });
 
     showLoading("Verificando no servidor...");
@@ -681,6 +724,10 @@ function openAddModal(){
 }
 
 async function addPerson(name, ticket){
+  if(!authReady){
+    showToast("Ainda conectando... aguarde um instante e tente de novo.", "warn");
+    return;
+  }
   showLoading(`Cadastrando ${name}...`);
   try{
     const dupe = Object.values(people).some(p => normalize(p.name) === normalize(name));
@@ -739,6 +786,10 @@ function openImportModal(){
 }
 
 async function bulkImport(rawText){
+  if(!authReady){
+    showToast("Ainda conectando... aguarde um instante e tente de novo.", "warn");
+    return;
+  }
   const lines = rawText.split(/\r?\n/).map(l=>l.trim()).filter(Boolean);
   if(!lines.length){ showToast("Cole ao menos um nome.", "error"); return; }
   const updates = {};
@@ -762,11 +813,14 @@ async function bulkImport(rawText){
     count++;
   });
   if(count === 0){ showToast("Nada para importar.", "error"); return; }
+  showLoading(`Importando ${count} pessoa(s)...`);
   try{
     await update(ref(db), updates);
     showToast(`${count} pessoa(s) importada(s).`, "ok");
   }catch(err){
     showToast("Erro ao importar: " + err.message, "error");
+  }finally{
+    hideLoading();
   }
 }
 
@@ -795,12 +849,28 @@ function openEditModal(id){
   `);
   document.getElementById("edit-form").addEventListener("submit", async (e)=>{
     e.preventDefault();
+    if(!authReady){
+      showToast("Ainda conectando... aguarde um instante e tente de novo.", "warn");
+      return;
+    }
     const name = document.getElementById("edit-name").value.trim();
     const ticket = document.getElementById("edit-ticket").value.trim();
     if(!name) return;
-    await update(ref(db, `people/${id}`), { name, normalizedName: normalize(name), ticket });
-    showToast("Cadastro atualizado.", "ok");
-    closeModal();
+    showLoading(`Salvando ${name}...`);
+    try{
+      const existing = await get(ref(db, `people/${id}`));
+      if(!existing.exists()){
+        showToast("Esse cadastro não existe mais.", "error");
+        return;
+      }
+      await update(ref(db, `people/${id}`), { name, normalizedName: normalize(name), ticket });
+      showToast("Cadastro atualizado.", "ok");
+    }catch(err){
+      showToast("Erro ao salvar: " + err.message, "error");
+    }finally{
+      hideLoading();
+      closeModal();
+    }
   });
 }
 
@@ -817,13 +887,20 @@ function confirmDelete(id){
     </div>
   `);
   document.getElementById("btn-confirm-delete").addEventListener("click", async ()=>{
+    if(!authReady){
+      showToast("Ainda conectando... aguarde um instante e tente de novo.", "warn");
+      return;
+    }
+    showLoading(`Excluindo ${p.name}...`);
     try{
       await remove(ref(db, `people/${id}`));
       showToast("Registro excluído.", "ok");
     }catch(err){
       showToast("Erro ao excluir: " + err.message, "error");
+    }finally{
+      hideLoading();
+      closeModal();
     }
-    closeModal();
   });
 }
 
