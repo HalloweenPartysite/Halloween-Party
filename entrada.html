@@ -419,45 +419,44 @@ let authReady = false;
 // clicar em algo antes da conexão estar pronta (o que antes podia falhar
 // silenciosamente com erro de permissão).
 let bootStarted = false;
+let bootTimeout = null;
+let maybeHideBootLoading = null;
 
 function startFirebaseBoot(){
   if(bootStarted) return;
   bootStarted = true;
   initFirebase();
   showLoading("Conectando...");
-function maybeHideBootLoading(){
+
+  bootTimeout = setTimeout(()=>{
+    if(!(authReady && loaded)){
+      showStuck("Demorou para conectar. Verifique a internet e toque em recarregar.");
+    }
+  }, 8000);
+
+  maybeHideBootLoading = function(){
+
   if(authReady && loaded){
-    clearTimeout(bootTimeout);
+    if(bootTimeout){ clearTimeout(bootTimeout); bootTimeout = null; }
     hideLoading();
   }
 }
-// IMPORTANTE: este timer só pode ser cancelado quando o app estiver
-// REALMENTE pronto (auth + dados). Antes, ele era cancelado assim que o
-// login anônimo terminava, mesmo que a lista de pessoas nunca chegasse —
-// nesse caso a tela de carregamento ficava girando pra sempre, sem aviso
-// e sem botão de recarregar. Agora qualquer trava (auth OU dados) aciona
-// o aviso, e só é cancelado dentro de maybeHideBootLoading().
-const bootTimeout = setTimeout(()=>{
-  if(!(authReady && loaded)){
-    showStuck("Demorando pra conectar... verifique sua internet ou toque em recarregar.");
-  }
-}, 8000);
-
 // Guarda a sessão anônima no navegador antes de logar, pra reaproveitar o
 // signInAnonymously e não criar uma conta nova a cada refresh — a sessão
 // fica salva no navegador (localStorage) e é reaproveitada nos acessos seguintes.
-setPersistence(auth, browserLocalPersistence)
-  .catch(()=>{ /* se falhar (ex: aba anônima do navegador), segue sem persistir */ })
-  .finally(()=>{
-    signInAnonymously(auth).catch((err) => {
-      clearTimeout(bootTimeout);
-      showStuck("Não foi possível conectar. Verifique a internet e toque em recarregar.");
-      showToast("Erro ao conectar: " + err.message, "error");
-    });
-  });
-  registerAuthListener();
+registerAuthListener();
   registerPeopleListener();
   registerConnectionListener();
+
+  setPersistence(auth, browserLocalPersistence)
+    .catch(()=>{})
+    .finally(()=>{
+      signInAnonymously(auth).catch((err) => {
+        if(bootTimeout){ clearTimeout(bootTimeout); bootTimeout = null; }
+        showStuck("Não foi possível conectar. Verifique a internet e toque em recarregar.");
+        showToast("Erro ao conectar: " + (err?.message || "falha de autenticação"), "error");
+      });
+    });
 }
 
 window.addEventListener("hellhouse-pin-ok", startFirebaseBoot, {once:true});
@@ -747,7 +746,7 @@ function registerPeopleListener(){ onValue(peopleRef, (snapshot)=>{
   // Se a lista nunca tiver carregado (ex: permissão negada no banco), não
   // deixa a tela de carregamento girando pra sempre sem explicação.
   if(!loaded){
-    clearTimeout(bootTimeout);
+    if(bootTimeout){ clearTimeout(bootTimeout); bootTimeout = null; }
     showStuck("Não foi possível carregar a lista. Toque em recarregar ou avise o suporte.");
   }
 }); }
