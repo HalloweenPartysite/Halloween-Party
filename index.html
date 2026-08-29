@@ -227,13 +227,13 @@
   }
   .hero h1 .accent {
     display: block;
-    font-family: 'Cinzel', serif;
-    font-weight: 500;
-    font-size: 0.38em;
+    font-family: 'Inter', sans-serif;
+    font-weight: 600;
+    font-size: 0.32em;
     color: var(--gold);
-    letter-spacing: 5px;
-    margin-top: 8px;
-    text-shadow: 0 0 14px rgba(201,162,75,0.4), 2px 2px 0 rgba(0,0,0,0.6);
+    letter-spacing: 1.5px;
+    margin-top: 10px;
+    text-shadow: 0 0 14px rgba(201,162,75,0.4);
   }
 
   .hero-rule {
@@ -359,12 +359,14 @@
     box-shadow: 0 0 16px rgba(224,56,74,0.2);
   }
   .cd-num {
-    font-family: 'Cormorant Garamond', serif;
-    font-size: clamp(1.5rem, 7vw, 2.1rem);
-    font-weight: 700;
+    font-family: 'Cinzel', serif;
+    font-size: clamp(1.4rem, 6.5vw, 1.9rem);
+    font-weight: 900;
     color: var(--red-glow);
     line-height: 1;
     font-variant-numeric: tabular-nums;
+    text-box-trim: trim-both;
+    text-box-edge: cap alphabetic;
   }
   .cd-num.tick { animation: cdBump 0.35s ease; }
   @keyframes cdBump {
@@ -377,6 +379,9 @@
     letter-spacing: 1.5px;
     text-transform: uppercase;
     color: var(--text-faint);
+    line-height: 1;
+    text-box-trim: trim-both;
+    text-box-edge: cap alphabetic;
   }
 
   /* ── COUNTDOWN É HOJE ── */
@@ -626,6 +631,42 @@
     letter-spacing: 0.3px;
   }
 
+  /* ── TAXA COM DESCONTO (cupom de divulgador) ── */
+  .bd-taxa-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 1px;
+  }
+  .bd-taxa-original {
+    display: none;
+    font-size: 0.72rem;
+    color: var(--text-faint);
+    text-decoration: line-through;
+  }
+  .bd-taxa-wrap.discounted .bd-taxa-original { display: inline; }
+  .bd-taxa-final {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+  .bd-taxa-wrap.discounted .bd-taxa-final {
+    color: var(--gold-bright);
+    font-weight: 700;
+  }
+  .bd-taxa-tag {
+    display: none;
+    font-size: 0.62rem;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+    color: var(--black);
+    background: var(--gold-bright);
+    padding: 1px 5px;
+    border-radius: 5px;
+    text-transform: uppercase;
+  }
+  .bd-taxa-wrap.discounted .bd-taxa-tag { display: inline-block; }
+
   /* ── CHECKBOX TERMOS ── */
   .terms-box {
     display: flex;
@@ -646,6 +687,9 @@
     cursor: pointer;
     position: relative;
     margin-top: 1px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
   }
   .terms-box input[type="checkbox"]:checked {
@@ -655,12 +699,10 @@
   }
   .terms-box input[type="checkbox"]:checked::after {
     content: '';
-    position: absolute;
-    left: 6px; top: 2px;
-    width: 5px; height: 10px;
-    border: solid var(--black);
-    border-width: 0 2px 2px 0;
-    transform: rotate(45deg);
+    width: 10px; height: 5px;
+    border-left: 2px solid var(--black);
+    border-bottom: 2px solid var(--black);
+    transform: rotate(-45deg) translateY(-1px);
   }
   .terms-box .terms-text {
     font-size: 0.78rem;
@@ -2445,10 +2487,15 @@ var QRCode;
 
     <div class="breakdown" id="breakdown">
       <div class="bd-row"><span id="bd-lote-label">Ingresso</span><span id="bd-lote-preco">--</span></div>
-      <div class="bd-row"><span>Taxa de serviço</span><span id="bd-taxa">--</span></div>
+      <div class="bd-row">
+        <span>Taxa de serviço</span>
+        <span class="bd-taxa-wrap" id="bd-taxa-wrap">
+          <span class="bd-taxa-original" id="bd-taxa-original">--</span>
+          <span class="bd-taxa-final"><span id="bd-taxa">--</span><span class="bd-taxa-tag">-20%</span></span>
+        </span>
+      </div>
       <div class="bd-divider"></div>
       <div class="bd-row bd-total"><span>Total</span><span id="bd-total">--</span></div>
-      <div class="bd-note" id="bd-coupon-note" style="display:none;">🎟️ Cupom aplicado: 20% de desconto na taxa de serviço.</div>
       <div class="bd-note">Seu QR Code Pix é gerado na hora — pague e confirme direto pelo WhatsApp.</div>
     </div>
 
@@ -2651,7 +2698,7 @@ var QRCode;
     <!-- TELA 2: NOME -->
     <div class="div-screen" id="div-screen-2">
       <div class="div-form-title">Seu nome de Divulgador</div>
-      <div class="div-form-sub">Esse nome vai aparecer no seu link e nas vendas que você indicar.</div>
+      <div class="div-form-sub">Você vai abrir o WhatsApp para nos avisar — em seguida enviamos seu link exclusivo de Divulgador.</div>
 
       <div class="field" id="div-field-nome">
         <label for="div-nome">Seu nome</label>
@@ -2662,7 +2709,7 @@ var QRCode;
         <div class="field-error">Por favor, digite seu nome.</div>
       </div>
 
-      <button class="div-name-btn" id="div-name-btn" disabled>Gerar meu link</button>
+      <button class="div-name-btn" id="div-name-btn" disabled>Enviar no WhatsApp</button>
     </div>
 
     <!-- TELA 4: OBRIGADO (após enviar nome pelo WhatsApp) -->
@@ -2923,7 +2970,14 @@ function renderCard(lote) {
     document.getElementById('bd-lote-preco').textContent = formatBRL(info.preco);
     document.getElementById('bd-taxa').textContent       = formatBRL(taxa);
     document.getElementById('bd-total').textContent      = formatBRL(total);
-    document.getElementById('bd-coupon-note').style.display = divRef ? 'block' : 'none';
+
+    const taxaWrap = document.getElementById('bd-taxa-wrap');
+    if (divRef) {
+      document.getElementById('bd-taxa-original').textContent = formatBRL(TAXA);
+      taxaWrap.classList.add('discounted');
+    } else {
+      taxaWrap.classList.remove('discounted');
+    }
   }
 }
 
