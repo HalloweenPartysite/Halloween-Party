@@ -33,7 +33,7 @@
     --gold-bright: #cfa85f;
     --text: #e9e0d5;
     --text-dim: #9c8b7d;
-    --text-faint: #55473f;
+    --text-faint: #8d7568; /* BUG FIX: era #55473f (contraste 2.3:1, abaixo do mínimo); agora ~4.8:1 */
     --green: #25D366;
     --danger: #c9584d;
   }
@@ -2460,7 +2460,7 @@ var QRCode;
     <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
     <div class="ref-banner-content">
       <span class="ref-banner-title">Você veio pelo convite de <strong id="ref-banner-nome"></strong></span>
-      <span class="ref-banner-coupon">🎟️ Ganhe 20% de desconto na taxa de serviço!</span>
+      <span class="ref-banner-coupon" id="ref-banner-coupon">🎟️ Ganhe desconto na taxa de serviço!</span>
     </div>
   </div>
 
@@ -2491,7 +2491,7 @@ var QRCode;
         <span>Taxa de serviço</span>
         <span class="bd-taxa-wrap" id="bd-taxa-wrap">
           <span class="bd-taxa-original" id="bd-taxa-original">--</span>
-          <span class="bd-taxa-final"><span id="bd-taxa">--</span><span class="bd-taxa-tag">-20%</span></span>
+          <span class="bd-taxa-final"><span id="bd-taxa">--</span><span class="bd-taxa-tag" id="bd-taxa-tag">--</span></span>
         </span>
       </div>
       <div class="bd-divider"></div>
@@ -2731,7 +2731,7 @@ const WHATSAPP  = '5519995002222';
 const PARTY_DATE = new Date('2026-10-03T22:00:00-03:00'); // horário de Brasília (UTC-3)
 const RAW_URL   = 'https://raw.githubusercontent.com/HalloweenPartysite/Halloween-Party/main/lote';
 const TAXA      = 1.50;
-const REF_DISCOUNT_PCT = 0.20; // desconto na taxa de serviço para quem vem por link de divulgador
+const REF_DISCOUNT_PCT = 0.30; // desconto na taxa de serviço p/ quem vem por link de divulgador — 30% redondo, deixa a taxa de R$1,50 em R$1,05
 const WARNING_SECONDS = 5; // BUG4 fix: centralizado aqui
 
 // ── CONFIG PIX ────────────────────────────────────────────
@@ -2754,12 +2754,32 @@ let fetchInterval = null; // BUG2 fix: referência para limpar
 const urlParams   = new URLSearchParams(window.location.search);
 const divRef      = (urlParams.get('ref') || '').trim();
 
+// BUG FIX: um ?ref= mal formado (ex: "%" sozinho) fazia decodeURIComponent
+// estourar erro e travava TODO o script (cronômetro, lote, formulário).
+// Com o try/catch, na pior das hipóteses só o nome do divulgador não decodifica.
+function capitalizeName(str) {
+  return str.replace(/\S+/g, word => word.charAt(0).toUpperCase() + word.slice(1));
+}
+
+function safeDecodeRefName(ref) {
+  const withSpaces = ref.replace(/-/g, ' ');
+  let decoded;
+  try {
+    decoded = decodeURIComponent(withSpaces);
+  } catch (e) {
+    decoded = withSpaces;
+  }
+  return capitalizeName(decoded);
+}
+
 if (divRef) {
   // mostra banner "Indicado por X"
-  const refBanner = document.getElementById('ref-banner');
-  const refNome   = document.getElementById('ref-banner-nome');
+  const refBanner  = document.getElementById('ref-banner');
+  const refNome    = document.getElementById('ref-banner-nome');
+  const refCoupon  = document.getElementById('ref-banner-coupon');
   if (refBanner && refNome) {
-    refNome.textContent = decodeURIComponent(divRef.replace(/-/g, ' '));
+    refNome.textContent = safeDecodeRefName(divRef);
+    if (refCoupon) refCoupon.textContent = '🎟️ Ganhe ' + Math.round(REF_DISCOUNT_PCT * 100) + '% de desconto na taxa de serviço!';
     refBanner.style.display = 'flex';
   }
 }
@@ -2831,7 +2851,7 @@ function openDivModal() {
 
 function closeDivModal() {
   divOverlay.classList.remove('open');
-  document.body.style.overflow = '';
+  syncBodyScrollLock();
   clearInterval(divCdInterval);
 }
 document.getElementById('div-close-btn-thanks').addEventListener('click', closeDivModal);
@@ -2974,6 +2994,7 @@ function renderCard(lote) {
     const taxaWrap = document.getElementById('bd-taxa-wrap');
     if (divRef) {
       document.getElementById('bd-taxa-original').textContent = formatBRL(TAXA);
+      document.getElementById('bd-taxa-tag').textContent = '-' + Math.round(REF_DISCOUNT_PCT * 100) + '%';
       taxaWrap.classList.add('discounted');
     } else {
       taxaWrap.classList.remove('discounted');
@@ -3142,7 +3163,7 @@ termsCheck.addEventListener('change', validateForm);
 const modal      = document.getElementById('terms-modal');
 const openTermsEl = document.getElementById('open-terms');
 function openTermsModal() { modal.classList.add('open'); document.body.style.overflow = 'hidden'; }
-function closeTermsModal() { modal.classList.remove('open'); document.body.style.overflow = ''; }
+function closeTermsModal() { modal.classList.remove('open'); syncBodyScrollLock(); }
 openTermsEl.addEventListener('click',   (e) => { e.preventDefault(); openTermsModal(); });
 openTermsEl.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openTermsModal(); } });
 document.getElementById('close-terms').addEventListener('click', closeTermsModal);
@@ -3196,19 +3217,31 @@ function resetWarningBtn() { // BUG4 fix: centralizado
   warningContinue.textContent = `Continuar (${WARNING_SECONDS})`;
 }
 
+// BUG FIX: o nome digitado pelo usuário ia direto pro innerHTML sem escapar —
+// alguém podia digitar HTML/script no lugar do nome e ele seria executado (XSS).
+function escapeHtml(str) {
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
 // modo 'nome': aviso de ingresso pessoal e intransferível (antes de gerar o Pix)
 // modo 'comprovante': aviso pra anexar o print antes de abrir o WhatsApp
 function showPersonalWarning(nome, mode, confirmCallback) {
   onWarningConfirm = confirmCallback;
+  const nomeSafe = escapeHtml(nome);
 
   if (mode === 'comprovante') {
     warningIcon.textContent = '📎';
     warningTitle.textContent = 'Não esqueça o comprovante';
-    warningTextEl.innerHTML = `Anexe o <strong>print ou PDF do comprovante</strong> de pagamento na conversa do WhatsApp. Sem o comprovante, seu ingresso não é confirmado, <strong id="warning-nome">${nome}</strong>.`;
+    warningTextEl.innerHTML = `Anexe o <strong>print ou PDF do comprovante</strong> de pagamento na conversa do WhatsApp. Sem o comprovante, seu ingresso não é confirmado, <strong id="warning-nome">${nomeSafe}</strong>.`;
   } else {
     warningIcon.textContent = '\u{1F3AB}';
     warningTitle.textContent = 'Ingresso pessoal e intransferível';
-    warningTextEl.innerHTML = `Apenas <strong id="warning-nome">${nome}</strong> poderá entrar na festa com este ingresso. Confira se o nome está correto.`;
+    warningTextEl.innerHTML = `Apenas <strong id="warning-nome">${nomeSafe}</strong> poderá entrar na festa com este ingresso. Confira se o nome está correto.`;
   }
 
   warningBarFill.classList.remove('run');
@@ -3238,10 +3271,22 @@ function showPersonalWarning(nome, mode, confirmCallback) {
   }, 1000);
 }
 
+// BUG FIX: destrava o scroll só se nenhum outro overlay (Pix, termos, warning,
+// divulgador) continuar aberto atrás. Centralizado aqui para os quatro modais
+// nunca destravarem o scroll um do outro por engano.
+function syncBodyScrollLock() {
+  const stillOpen =
+    pixOverlay.classList.contains('open') ||
+    modal.classList.contains('open') ||
+    warningOverlay.classList.contains('open') ||
+    (divOverlay && divOverlay.classList.contains('open'));
+  document.body.style.overflow = stillOpen ? 'hidden' : '';
+}
+
 warningContinue.addEventListener('click', () => {
   if (warningContinue.disabled) return;
   warningOverlay.classList.remove('open');
-  document.body.style.overflow = ''; // BUG fix: destrava scroll do fundo
+  syncBodyScrollLock(); // BUG fix: só destrava se não houver outro modal aberto atrás
   const cb = onWarningConfirm;
   onWarningConfirm = null;
   if (cb) cb();
@@ -3250,7 +3295,7 @@ warningContinue.addEventListener('click', () => {
 document.getElementById('warning-cancel').addEventListener('click', () => {
   clearInterval(warningTimer); // BUG3 fix
   warningOverlay.classList.remove('open');
-  document.body.style.overflow = ''; // BUG fix: destrava scroll do fundo
+  syncBodyScrollLock(); // BUG fix: só destrava se não houver outro modal aberto atrás
   resetWarningBtn(); // BUG4 fix
   onWarningConfirm = null;
   btnComprar.classList.remove('clicked', 'loading');
@@ -3284,6 +3329,14 @@ function openPixModal(nome) {
     showToast('Aguarde o carregamento das informações.');
     return;
   }
+  // BUG FIX: revalida o lote na hora de abrir o Pix — se esgotou (virou venda
+  // só na porta, ex: lote 4) enquanto o aviso de "ingresso pessoal" estava
+  // aberto, não gera cobrança online. Ingresso na porta não tem taxa.
+  if (LOTES[currentLote].soldOut) {
+    showToast('Os ingressos online esgotaram. Ingresso disponível só na porta, sem taxa de serviço.');
+    renderCard(currentLote);
+    return;
+  }
   const info  = LOTES[currentLote];
   const taxa  = getEffectiveTaxa();
   const total = +(info.preco + taxa).toFixed(2);
@@ -3292,7 +3345,7 @@ function openPixModal(nome) {
   pixCurrentTotal = total;
 
   pixAmountEl.textContent   = formatBRL(total);
-  pixLoteSubEl.textContent  = 'Ingresso · ' + info.nome + (divRef ? ' + taxa de serviço (com 20% de desconto)' : ' + taxa de serviço');
+  pixLoteSubEl.textContent  = 'Ingresso · ' + info.nome + (divRef ? ' + taxa de serviço (com ' + Math.round(REF_DISCOUNT_PCT * 100) + '% de desconto)' : ' + taxa de serviço');
   pixNameNoteEl.textContent = nome;
   pixCopyInput.value        = 'Gerando código Pix...';
   pixCopyBtn.classList.remove('copied');
@@ -3326,7 +3379,7 @@ function openPixModal(nome) {
 
 function closePixModal() {
   pixOverlay.classList.remove('open');
-  document.body.style.overflow = '';
+  syncBodyScrollLock();
   btnComprar.classList.remove('clicked', 'loading'); // BUG FIX: remove loading state
   validateForm();
 }
@@ -3361,7 +3414,7 @@ pixConfirmBtn.addEventListener('click', () => {
     pixConfirmBtn.classList.remove('loading');
     const msgText = `Ola! Acabei de pagar meu ingresso via Pix.\n\n` +
                     `Nome: ${pixCurrentNome}\n` +
-                    (divRef ? `Divulgador: ${decodeURIComponent(divRef.replace(/-/g, ' '))}\n` : '') +
+                    (divRef ? `Divulgador: ${safeDecodeRefName(divRef)}\n` : '') +
                     `Segue o comprovante em anexo.`;
     const waUrl = 'https://wa.me/' + WHATSAPP + '?text=' + encodeURIComponent(msgText);
     window.open(waUrl, '_blank');
@@ -3371,7 +3424,7 @@ pixConfirmBtn.addEventListener('click', () => {
 
 pixHelpBtn.addEventListener('click', () => {
   const msgText = `Ola!\n\nNome: ${pixCurrentNome}\n\n` +
-                  (divRef ? `Divulgador: ${decodeURIComponent(divRef.replace(/-/g, ' '))}\n\n` : '') +
+                  (divRef ? `Divulgador: ${safeDecodeRefName(divRef)}\n\n` : '') +
                   `Quero comprar meu ingresso para a Halloween Party, mas nao consegui concluir o pagamento via Pix.`;
   const waUrl = 'https://wa.me/' + WHATSAPP + '?text=' + encodeURIComponent(msgText);
   window.open(waUrl, '_blank');
